@@ -78,14 +78,14 @@ export default {
     //         key: "out-order",
     //         name: "缺货订单"
     //     }]
-    // }, {
-    //     key: "warehouse",
-    //     name: "库存管理",
-    //     icon: "inbox",
-    //     item: [{
-    //         key: "warehouse-department",
-    //         name: "部门库存"
-    //     }]
+    }, {
+        key: "warehouse",
+        name: "库存管理",
+        icon: "inbox",
+        item: [{
+            key: "warehouse-department",
+            name: "库存管理"
+        }]
     // }, {
     //     key: "edit",
     //     name: "设置",

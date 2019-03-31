@@ -1,7 +1,7 @@
-import navActive from './nav'
+import tabReduce from './tab'
 
 export default (state = {}, action) => {
     return {
-        navActive: navActive(state.navActive, action.type)
+        tab: tabReduce(state.tab, action)
     }
 }

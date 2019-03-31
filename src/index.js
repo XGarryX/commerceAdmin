@@ -7,7 +7,13 @@ import './style/index.css'
 import App from './App'
 import * as serviceWorker from './serviceWorker';
 
-const store = createStore(appReducer)
+const defaultStore = {
+    tab: {
+        tabList: [],
+        tabKey: null
+    }
+}
+const store = createStore(appReducer, defaultStore)
 
 ReactDOM.render(
     <Provider store={store}>
