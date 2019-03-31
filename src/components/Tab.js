@@ -13,7 +13,7 @@ class Tab extends Component {
         const {props: {removeTab, toggleTab, tabList, tabKey}} = this
         removeTab(key)
         const defaultKey = tabList[0] && tabList[0].tabKey
-        !tabList.includes(tabKey) && defaultKey && toggleTab(defaultKey)
+        key === tabKey && defaultKey && toggleTab(defaultKey)
     }
     render() {
         const {props} = this
@@ -24,6 +24,7 @@ class Tab extends Component {
                 onChange={key => this.handleChange(key)}
                 onEdit={key => this.handleEdit(key)}
                 type="editable-card"
+                className="tag-list"
             >
             {
                 props.tabList.map(tab => {

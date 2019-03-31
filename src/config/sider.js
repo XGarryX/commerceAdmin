@@ -5,13 +5,15 @@ export default {
         name: "产品管理",
         icon: "menu-unfold",
         item: [{
-            key: "product-list",
-            name: "产品列表"
+            tabKey: "product-list",
+            name: "产品列表",
+            path: 'productList'
         }, {
-            key: "product-edit",
-            name: "编辑产品"
+            tabKey: "product-edit",
+            name: "编辑产品",
+            path: "productEdit"
         }, {
-            key: "product-SKU",
+            tabKey: "product-SKU",
             name: "产品SKU"
         }]
     // }, {
@@ -39,7 +41,7 @@ export default {
         name: "订单管理",
         icon: "line-chart",
         item: [{
-            key: "DF-list",
+            tabKey: "DF-list",
             name: "订单列表"
         // }, {
         //     key: "DF-count",
@@ -83,7 +85,7 @@ export default {
         name: "库存管理",
         icon: "inbox",
         item: [{
-            key: "warehouse-department",
+            tabKey: "warehouse-department",
             name: "库存管理"
         }]
     // }, {

@@ -4,6 +4,7 @@ import {
 } from 'antd'
 import { connect } from 'react-redux'
 import Tab from './components/Tab'
+import PageLoadable from './components/PageLoadable'
 import { addTab, toggleTab } from './redux/action/tab'
 import './style/App.less'
 import siderData from './config/sider.js'
@@ -20,8 +21,8 @@ class App extends Component {
   }
   handleClick(tab) {
     const {props: {toggleTab, addTab, tabList}} = this
-    !tabList.find(item => item.tabKey === tab.key) && addTab({name: tab.name, tabKey: tab.key})
-    toggleTab(tab.key)
+    !tabList.find(item => item.tabKey === tab.tabKey) && addTab(tab)
+    toggleTab(tab.tabKey)
   }
   render() {
     return (
@@ -44,7 +45,7 @@ class App extends Component {
                 return <SubMenu key={menu.key} title={<span><Icon type={menu.icon} />{menu.name}</span>}>
                 {
                   menu.item.map(item => {
-                    return <Menu.Item key={item.key} onClick={() => this.handleClick(item)} >{item.name}</Menu.Item>
+                    return <Menu.Item key={item.tabKey} onClick={() => this.handleClick(item)} >{item.name}</Menu.Item>
                   })
                 }
                 </SubMenu>
@@ -54,7 +55,12 @@ class App extends Component {
           </Sider>
           <Layout>
             <Tab className="tab-list"></Tab>
-            <Content className="content">111</Content>
+            <Content className="content">{
+              this.props.tabList.map(item => {
+                const Page = PageLoadable(item.path)
+                return <Page key={item.tabKey} style={{display: item.tabKey === this.props.tabKey ? 'block' : 'none'}} />
+              })
+            }</Content>
           </Layout>
         </Layout>
       </Layout>
@@ -63,9 +69,10 @@ class App extends Component {
 }
 
 const mapStoreToProps = store => {
-  const {tab: {tabList}} = store
+  const {tab: {tabList, tabKey}} = store
   return {
-      tabList
+      tabList,
+      tabKey
   }
 }
 
