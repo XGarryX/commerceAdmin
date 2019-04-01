@@ -7,8 +7,11 @@ class PicturesWall extends Component {
         previewImage: '',
         fileList: [],
     }
-    handleCancel (){
+    handleCancel() {
         this.setState({ previewVisible: false })
+    }
+    handleChange({ fileList }) {
+        this.setState({ fileList })
     }
     handlePreview(file) {
         this.setState({
@@ -17,7 +20,8 @@ class PicturesWall extends Component {
         });
     }
     render() {
-        const { previewVisible, previewImage, fileList } = this.state;
+        const { previewVisible, previewImage, fileList } = this.state
+        const maxImageLength = 4
         const uploadButton = (
             <div>
                 <Icon type="plus" />
@@ -27,13 +31,13 @@ class PicturesWall extends Component {
         return (
             <div className="clearfix">
                 <Upload
-                    action="//jsonplaceholder.typicode.com/posts/"
                     listType="picture-card"
                     fileList={fileList}
+                    multiple
                     onPreview={this.handlePreview.bind(this)}
-                    onChange={this.handleChange}
+                    onChange={this.handleChange.bind(this)}
                 >
-                    {fileList.length >= 3 ? null : uploadButton}
+                    {fileList.length >= maxImageLength ? null : uploadButton}
                 </Upload>
                 <Modal visible={previewVisible} footer={null} onCancel={this.handleCancel.bind(this)}>
                     <img alt="example" style={{ width: '100%' }} src={previewImage} />
