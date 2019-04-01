@@ -1,0 +1,38 @@
+.add-product{
+    padding: 10px;
+    background: #FFF;
+    box-sizing: border-box;
+    .product-table{
+        @borderStyle: 1px solid #cdcdcd;
+        border: @borderStyle;
+        tr{
+            border-bottom: @borderStyle;
+            th{
+                min-width: 100px;
+                font-weight: 600;
+                padding: 0 10px;
+                border-right: @borderStyle;
+            }
+            td{
+                padding: 7px 20px;
+                .select{
+                    width: 200px;
+                }
+                .input{
+                    width: 400px;
+                }
+            }
+            &.tr-editer{
+                td{
+                    padding: 0;
+                    .editer-block{
+                        box-sizing: border-box;
+                        .editer{
+                            background: #FFF;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

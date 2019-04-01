@@ -9,6 +9,10 @@ export default {
             name: "产品列表",
             path: 'productList'
         }, {
+            tabKey: "product-add",
+            name: "添加产品",
+            path: "productAdd"
+        },{
             tabKey: "product-edit",
             name: "编辑产品",
             path: "productEdit"

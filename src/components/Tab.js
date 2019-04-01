@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Tabs } from 'antd'
 import { toggleTab, removeTab } from '../redux/action/tab'
-import '../style/Tab.less'
+import '../style/components/Tab.less'
 
 const TabPane = Tabs.TabPane
 class Tab extends Component {

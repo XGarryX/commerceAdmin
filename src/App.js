@@ -39,6 +39,7 @@ class App extends Component {
             <Menu
               mode="inline"
               style={{ height: '100%', borderRight: '1px solid #e2e2e2' }}
+              selectedKeys={[this.props.tabKey]}
             >
             {
               this.state.menuList.map(menu => {
@@ -57,8 +58,7 @@ class App extends Component {
             <Tab className="tab-list"></Tab>
             <Content className="content">{
               this.props.tabList.map(item => {
-                const Page = PageLoadable(item.path)
-                return <Page key={item.tabKey} style={{display: item.tabKey === this.props.tabKey ? 'block' : 'none'}} />
+                return <PageLoadable key={item.tabKey} keyValue={item.tabKey} path={item.path} /> 
               })
             }</Content>
           </Layout>
