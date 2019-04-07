@@ -19,6 +19,9 @@ class PicturesWall extends Component {
             previewVisible: true,
         });
     }
+    beforeUpload({type}) {
+        console.log(type)
+    }
     render() {
         const { previewVisible, previewImage, fileList } = this.state
         const maxImageLength = 4
