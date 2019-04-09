@@ -6,8 +6,8 @@ import { connect } from 'react-redux'
 import Tab from './components/Tab'
 import PageLoadable from './components/PageLoadable'
 import { addTab, toggleTab } from './redux/action/tab'
-import './style/App.less'
 import siderData from './config/sider.js'
+import './style/App.less'
 
 const { SubMenu } = Menu
 const { Header, Content, Sider } = Layout
@@ -15,7 +15,8 @@ class App extends Component {
   constructor(props) {
     super(props)
     this.state = Object.assign({
-      userName: '用户名'
+      userName: '用户名',
+      collapsed: false,
     }, siderData)
     this.handleClick = this.handleClick.bind(this)
   }
@@ -23,6 +24,9 @@ class App extends Component {
     const {props: {toggleTab, addTab, tabList}} = this
     !tabList.find(item => item.tabKey === tab.tabKey) && addTab(tab)
     toggleTab(tab.tabKey)
+  }
+  onCollapse = collapsed => {
+    this.setState({ collapsed });
   }
   render() {
     return (
@@ -35,10 +39,17 @@ class App extends Component {
           </div>
         </Header>
         <Layout>
-          <Sider width={200} style={{ background: '#fff' }}>
+          <Sider
+            width={200}
+            theme="light"
+            collapsible
+            collapsed={this.state.collapsed}
+            className="sider"
+            onCollapse={this.onCollapse}
+          >
             <Menu
               mode="inline"
-              style={{ height: '100%', borderRight: '1px solid #e2e2e2' }}
+              style={{borderRight: 'none' }}
               selectedKeys={[this.props.tabKey]}
             >
             {

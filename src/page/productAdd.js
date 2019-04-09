@@ -1,14 +1,13 @@
 import React, { Component } from 'react'
 //import axios from 'axios'
-import { Input, Select, TreeSelect } from 'antd'
+import { Input, TreeSelect } from 'antd'
 import BraftEditor from 'braft-editor'
+import SearchSelect from '../components/SearchSelect'
 import PicturesWall from '../components/PicturesWall'
 import { depm, ader, type, supplier } from '../static/add.js'
 import '../style/page/productAdd.less'
 import 'braft-editor/dist/index.css'
 
-const { Option } = Select,
-    { TreeNode } = TreeSelect 
 class productAdd extends Component {
     constructor(props) {
         super(props)
@@ -21,6 +20,7 @@ class productAdd extends Component {
             this.setState({
                 depm,
                 ader,
+                supplier,
                 isFetching: false
             })
         }, 1000)
@@ -37,41 +37,30 @@ class productAdd extends Component {
                             <tr className="department">
                                 <th>部门</th>
                                 <td className="">
-                                    <Select
-                                        showSearch
+                                    <SearchSelect
+                                        loading={this.state.isFetching}
                                         className="select"
                                         placeholder="选择部们"
-                                        filterOption={this.filterOption}
-                                    >
-                                    {
-                                        depm.map(item => {
-                                            return <Option key={item.id} value={item.id}>{item.name}</Option>
-                                        })
-                                    }
-                                    </Select>
+                                        dataSource={this.state.depm}
+                                    />
                                 </td>
                             </tr>
                             <tr className="ader">
                                 <th>广告手</th>
                                 <td>
-                                    <Select
-                                        showSearch
+                                    <SearchSelect
+                                        loading={this.state.isFetching}
                                         className="select"
                                         placeholder="选择广告手"
-                                        filterOption={this.filterOption}
-                                    >
-                                    {
-                                        ader.map(item => {
-                                            return <Option key={item.id} value={item.id}>{item.name}</Option>
-                                        })
-                                    }
-                                    </Select>
+                                        dataSource={this.state.ader}
+                                    />
                                 </td>
                             </tr>
                             <tr className="ader">
                                 <th>商品分类</th>
                                 <td>
                                     <TreeSelect 
+                                        loading={this.state.isFetching}
                                         showSearch
                                         placeholder="选择分类"
                                         className="select"
@@ -118,18 +107,12 @@ class productAdd extends Component {
                             <tr>
                                 <th>供应商</th>
                                 <td>
-                                    <Select
-                                        showSearch
+                                    <SearchSelect
+                                        loading={this.state.isFetching}
                                         className="select"
                                         placeholder="选择供应商"
-                                        filterOption={this.filterOption}
-                                    >
-                                    {
-                                        supplier.map(item => {
-                                            return <Option key={item.id} value={item.id}>{item.name}</Option>
-                                        })
-                                    }
-                                    </Select>
+                                        dataSource={this.state.supplier}
+                                    />
                                 </td>
                             </tr>
                             <tr>

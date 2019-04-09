@@ -23,7 +23,19 @@
             }
         }
     }
+    .sider{
+        height: 100%;
+        box-shadow: 1px 0px 1px #e2e2e2;
+        &.ant-layout-sider-collapsed{
+            .ant-menu-item, .ant-menu-submenu{
+                span{
+                    font-size: 0;
+                }
+            }
+        }
+    }
     .content{
+        padding-left: 1px;
         overflow-y: auto;
     }
 }

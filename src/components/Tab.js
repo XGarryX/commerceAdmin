@@ -18,7 +18,7 @@ class Tab extends Component {
     render() {
         const {props} = this
         return (
-            <Tabs
+            props.tabList.length > 0 ? <Tabs
                 hideAdd
                 activeKey={props.tabKey}
                 onChange={key => this.handleChange(key)}
@@ -35,7 +35,7 @@ class Tab extends Component {
                     </TabPane>
                 })
             }
-            </Tabs>
+            </Tabs> : ''
         )
     }
 }
