@@ -46,7 +46,8 @@ export default {
         icon: "line-chart",
         item: [{
             tabKey: "DF-list",
-            name: "订单列表"
+            name: "订单列表",
+            path: "orderList"
         // }, {
         //     key: "DF-count",
         //     name: "每日统计"

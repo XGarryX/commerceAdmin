@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
-import { Table, Input } from 'antd'
-import SearchSelect from '../components/SearchSelect'
+import { Table, Input, Button, Icon } from 'antd'
+import Highlighter from 'react-highlight-words'
+import axios from 'axios'
 import '../style/page/productList.less'
 import { depm, ader, type } from '../static/add.js'
 
@@ -55,9 +56,86 @@ const data = [{
 class productList extends Component {
     state = {
         isFetching: true,
+        searchText: {}
     }
-    handleChange(value) {
-        console.log(value)
+    searchProduct() {
+        this.setState({
+            isFetching: true
+        })
+        /*axios.post('/serch', {
+                ...this.state.searchText
+            })
+            .then(response => {
+
+            })
+            .catch(err => {
+
+            })*/
+        setTimeout(() => {
+            this.setState({
+                isFetching: false
+            })
+        }, 1000)
+    }
+    getColumnSearchProps = (dataIndex, placeholder) => ({
+        filterDropdown: ({
+            setSelectedKeys, selectedKeys, confirm, clearFilters,
+        }) => (
+            <div style={{ padding: 8 }}>
+                <Input
+                    ref={node => { this.searchInput = node; }}
+                    placeholder={placeholder ? placeholder : `Search ${dataIndex}`}
+                    value={selectedKeys[0]}
+                    onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => this.handleSearch(confirm, selectedKeys, dataIndex)}
+                    style={{ width: 188, marginBottom: 8, display: 'block' }}
+                />
+                <Button
+                    type="primary"
+                    onClick={() => this.handleSearch(confirm, selectedKeys, dataIndex)}
+                    icon="search"
+                    size="small"
+                    style={{ width: 90, marginRight: 8 }}
+                >
+                Search
+                </Button>
+                <Button
+                    onClick={() => this.handleReset(clearFilters, dataIndex)}
+                    size="small"
+                    style={{ width: 90 }}
+                >
+                Reset
+                </Button>
+            </div>
+        ),
+        filterIcon: filtered => <Icon type="search" style={{ color: filtered ? '#1890ff' : undefined }} />,
+        onFilterDropdownVisibleChange: visible => visible && setTimeout(() => this.searchInput.select()),
+        render: (text) => (
+            <Highlighter
+                highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+                searchWords={[this.state.searchText[dataIndex]]}
+                autoEscape
+                textToHighlight={text.toString()}
+          />
+        ),
+    })
+    handleSearch = (confirm, selectedKeys, dataIndex) => {
+        this.setState({
+            searchText: Object.assign(this.state.searchText, {
+                [dataIndex]: selectedKeys[0]
+            })
+        })
+        this.searchProduct()
+        confirm()
+    }
+    handleReset = (clearFilters, dataIndex) => {
+        this.setState({
+            searchText: Object.assign(this.state.searchText, {
+                [dataIndex]: ''
+            })
+        })
+        this.searchProduct()
+        clearFilters();
     }
     handlePageChange(page, pageSize) {
         console.log(page, pageSize)
@@ -79,36 +157,43 @@ class productList extends Component {
             title: 'ID',
             className: 'ID',
             dataIndex: 'ID',
+            ...this.getColumnSearchProps('ID'),
         }, {
             title: '分类',
             className: 'type',
             dataIndex: 'type',
+            ...this.getColumnSearchProps('type'),
         }, {
             title: '广告手',
             className: 'ADer',
             dataIndex: 'ADer',
+            ...this.getColumnSearchProps('Ader'),
         }, {
             title: '产品图片',
             className: 'picture',
             dataIndex: 'picture',
-            render: url => <a href='javascript:;'>查看</a>
+            render: url => <a href='javascript:;'>查看</a>,
         }, {
             title: '产品名',
             className: 'name',
             dataIndex: 'name',
+            ...this.getColumnSearchProps('name'),
         }, {
             title: '内部名',
             className: 'iname',
             dataIndex: 'iname',
+            ...this.getColumnSearchProps('iname'),
         }, {
             title: 'SKU',
             className: 'SKU',
             dataIndex: 'SKU',
+            ...this.getColumnSearchProps('SKU'),
         }, {
             title: '进货价',
             className: 'buyPrice',
             dataIndex: 'buyPrice',
             render: num => <span>{toDouble(num)}</span>,
+            ...this.getColumnSearchProps('buyPrice', '高于X eg:60'),
         }, {
             title: '销售价',
             className: 'selfPrice',
@@ -120,13 +205,15 @@ class productList extends Component {
             dataIndex: 'money',
         }, {
             title: '库存',
-            className: '5%',
+            className: 'stock',
             dataIndex: 'stock',
+            ...this.getColumnSearchProps('stock'),
         }, {
             title: '状态',
             className: 'state',
             dataIndex: 'state',
             render: state => <span>{state ? '上架' : '下架'}</span>,
+            ...this.getColumnSearchProps('state'),
         }, {
             title: '操作',
             className: 'operation',
@@ -138,6 +225,7 @@ class productList extends Component {
                 <Table
                     size="middle"
                     loading={isFetching}
+                    bordered={true}
                     className="productList"
                     columns={columns}
                     dataSource={data}

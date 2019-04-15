@@ -20,6 +20,7 @@ class Tab extends Component {
         return (
             props.tabList.length > 0 ? <Tabs
                 hideAdd
+                tabBarStyle={{margin: 0}}
                 activeKey={props.tabKey}
                 onChange={key => this.handleChange(key)}
                 onEdit={key => this.handleEdit(key)}
