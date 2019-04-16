@@ -1,17 +1,31 @@
 import React, { Component } from 'react'
-import { Table } from 'antd'
+import { Table, Select, Calendar } from 'antd'
 import axios from 'axios'
 import orderList from '../static/orderList.json'
 import '../style/page/orderList.less'
 
-const toDouble = num => Number(num).toFixed(2)
 class productList extends Component {
+    constructor(props) {
+        super(props)
+        this.handleResize = this.handleResize.bind(this)
+    }
     state = {
         orderList: [],
-        isFetching: true
+        isFetching: true,
+        scrollY: 0,
     }
     handlePageChange(page, pageSize) {
         console.log(page, pageSize)
+    }
+    handleResize() {
+        const parentElm = document.body.querySelector('#order-block')
+        const searchBar = parentElm.querySelector('.search-bar')
+        const pagination = parentElm.querySelector('.ant-pagination')
+        const tabelHeader = parentElm.querySelector('.ant-table-header')
+        const scrollY = parentElm.offsetHeight - (searchBar && searchBar.offsetHeight || 0) - (pagination && pagination.offsetHeight || 0) - (tabelHeader && tabelHeader.offsetHeight || 0)
+        this.setState({
+            scrollY
+        })
     }
     componentDidMount() {
         setTimeout(() => {
@@ -20,6 +34,11 @@ class productList extends Component {
                 isFetching: false
             })
         }, 1000)
+        this.handleResize()
+        window.addEventListener('resize', this.handleResize)
+    }
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleResize)
     }
     render() {
         const { isFetching, orderList } = this.state
@@ -130,7 +149,19 @@ class productList extends Component {
             render: () => <a href="javascript:;">详情</a>,
         }]
         return (
-            <div className="order-block">
+            <div className="order-block" id="order-block">
+                <div className="search-bar">
+                    <label>
+                        部门:<Select></Select>
+                        域名:<Select></Select>
+                        物流状态:<Select></Select>
+                        物流:<Select></Select>
+                        地区:<Select></Select>
+                        订单状态:<Select></Select>
+                        关键词:<Select></Select>
+                        起始时间:<Calendar fullscreen={false} ></Calendar>-<Calendar fullscreen={false} ></Calendar>
+                    </label>
+                </div>
                 <div className="order-list">
                     <Table
                         size="middle"
@@ -139,14 +170,14 @@ class productList extends Component {
                         rowKey="orderId"
                         bordered
                         columns={columns}
-                        scroll={{x: '130%'}}
+                        scroll={{x: 1000, y: this.state.scrollY}}
                         dataSource={orderList}
                         pagination={{
                             total: orderList ? orderList.length : 0,
                             pageSize: 10,
                             showTotal: total => `共有${total}条数据`,
                             showSizeChanger: true, 
-                            onChange: this.handlePageChange
+                            onChange: this.handlePageChange.bind(this)
                         }}
                     />
                 </div>

@@ -6,6 +6,7 @@ import { connect } from 'react-redux'
 import Tab from './components/Tab'
 import PageLoadable from './components/PageLoadable'
 import { addTab, toggleTab } from './redux/action/tab'
+import { taggleSider } from './redux/action/sider'
 import siderData from './config/sider.js'
 import './style/App.less'
 
@@ -16,7 +17,6 @@ class App extends Component {
     super(props)
     this.state = Object.assign({
       userName: '用户名',
-      collapsed: false,
     }, siderData)
     this.handleClick = this.handleClick.bind(this)
   }
@@ -25,8 +25,8 @@ class App extends Component {
     !tabList.find(item => item.tabKey === tab.tabKey) && addTab(tab)
     toggleTab(tab.tabKey)
   }
-  onCollapse = collapsed => {
-    this.setState({ collapsed });
+  onCollapse(collapsed) {
+    this.props.taggleSider(collapsed);
   }
   render() {
     return (
@@ -43,9 +43,9 @@ class App extends Component {
             width={200}
             theme="light"
             collapsible
-            collapsed={this.state.collapsed}
+            collapsed={this.props.collapsed}
             className="sider"
-            onCollapse={this.onCollapse}
+            onCollapse={this.onCollapse.bind(this)}
           >
             <Menu
               mode="inline"
@@ -80,16 +80,18 @@ class App extends Component {
 }
 
 const mapStoreToProps = store => {
-  const {tab: {tabList, tabKey}} = store
+  const {tab: {tabList, tabKey}, sider: { collapsed }} = store
   return {
       tabList,
-      tabKey
+      tabKey,
+      collapsed
   }
 }
 
 const mapDispathToProps = dispatch => ({
   addTab: tabKey => dispatch(addTab(tabKey)),
   toggleTab: tabKey => dispatch(toggleTab(tabKey)),
+  taggleSider: state => dispatch(taggleSider(state)),
 })
 
 export default connect(

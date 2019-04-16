@@ -11,6 +11,9 @@ const defaultStore = {
     tab: {
         tabList: [],
         tabKey: null
+    },
+    sider: {
+        collapsed: false
     }
 }
 const store = createStore(appReducer, defaultStore)
