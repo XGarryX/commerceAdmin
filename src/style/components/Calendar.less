@@ -1,0 +1,21 @@
+.calendar{
+    position: relative;
+    display: inline-block;
+    .js-datatime{
+        width: 130px;
+        padding: 0 5px
+    }
+    .calendar-block{
+        position: absolute;
+        width: 300px;
+        background: #FFF;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        z-index: 99;
+        transition: all .1s;
+        &.hiden{
+            opacity: 0;
+            visibility: hidden;
+        }
+    }
+}

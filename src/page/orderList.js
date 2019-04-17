@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
-import { Table, Select, Calendar } from 'antd'
+import { Table, Input, Select, DatePicker } from 'antd'
 import axios from 'axios'
 import orderList from '../static/orderList.json'
 import '../style/page/orderList.less'
+
+const { RangePicker } = DatePicker
 
 class productList extends Component {
     constructor(props) {
@@ -17,14 +19,41 @@ class productList extends Component {
     handlePageChange(page, pageSize) {
         console.log(page, pageSize)
     }
-    handleResize() {
-        const parentElm = document.body.querySelector('#order-block')
-        const searchBar = parentElm.querySelector('.search-bar')
-        const pagination = parentElm.querySelector('.ant-pagination')
-        const tabelHeader = parentElm.querySelector('.ant-table-header')
-        const scrollY = parentElm.offsetHeight - (searchBar && searchBar.offsetHeight || 0) - (pagination && pagination.offsetHeight || 0) - (tabelHeader && tabelHeader.offsetHeight || 0)
+    handleResize = ((win) => {
+        let _lastHeight
+        return () => {
+            const winHeight = win.innerHeight
+            if(_lastHeight != winHeight){
+                const parentElm = document.body.querySelector('#order-block')
+                const searchBar = parentElm.querySelector('.search-bar')
+                const pagination = parentElm.querySelector('.ant-pagination')
+                const tabelHeader = parentElm.querySelector('.ant-table-header')
+                const scrollY = parentElm.offsetHeight - (searchBar && searchBar.offsetHeight || 0) - (pagination && pagination.offsetHeight || 0) - (tabelHeader && tabelHeader.offsetHeight || 0)
+                this.setState({
+                    scrollY
+                })
+            }
+            _lastHeight = winHeight
+        }
+    })(window)
+    handleSeachOptionChange(key, value) {
         this.setState({
-            scrollY
+            [key]: value
+        })
+    }
+    renderSearchOption(options) {
+        return options.map(item => {
+            const { key, render, title } = item
+            return (
+                <label>
+                    {title}:
+                    {
+                        render(value => {
+                            this.handleSeachOptionChange(key, value)
+                        })
+                    }
+                </label>
+            )
         })
     }
     componentDidMount() {
@@ -34,7 +63,6 @@ class productList extends Component {
                 isFetching: false
             })
         }, 1000)
-        this.handleResize()
         window.addEventListener('resize', this.handleResize)
     }
     componentWillUnmount() {
@@ -148,19 +176,43 @@ class productList extends Component {
             dataIndex: 'operating',
             render: () => <a href="javascript:;">详情</a>,
         }]
+        const options = [{
+            key: 'department',
+            title: '部门',
+            render: handleChange => <Select onChange={e => handleChange(e)}/>
+        }, {
+            key: 'domain',
+            title: '域名',
+            render: handleChange => <Select onChange={e => handleChange(e)}/>
+        }]
         return (
             <div className="order-block" id="order-block">
                 <div className="search-bar">
-                    <label>
-                        部门:<Select></Select>
-                        域名:<Select></Select>
-                        物流状态:<Select></Select>
-                        物流:<Select></Select>
-                        地区:<Select></Select>
-                        订单状态:<Select></Select>
-                        关键词:<Select></Select>
-                        起始时间:<Calendar fullscreen={false} ></Calendar>-<Calendar fullscreen={false} ></Calendar>
+                    {/* <label>
+                        部门:<Select size="small" className="opitons"></Select>
                     </label>
+                    <label>
+                        域名:<Select size="small" className="opitons long"></Select>
+                    </label>
+                    <label>
+                        物流状态:<Select size="small" className="opitons"></Select>
+                    </label>
+                    <label>
+                        物流:<Select size="small" className="opitons"></Select>
+                    </label>
+                    <label>
+                        地区:<Select size="small" className="opitons"></Select>
+                    </label>
+                    <label>
+                        订单状态:<Select size="small" className="opitons"></Select>
+                    </label>
+                    <label>
+                        关键词:<Input size="small" className="opitons long" />
+                    </label>
+                    <label>
+                        起始时间:<RangePicker size="small" style={{width: 200}} className="opitons" />
+                    </label> */}
+                    {...this.renderSearchOption(options)}
                 </div>
                 <div className="order-list">
                     <Table
@@ -170,8 +222,11 @@ class productList extends Component {
                         rowKey="orderId"
                         bordered
                         columns={columns}
-                        scroll={{x: 1000, y: this.state.scrollY}}
+                        scroll={
+                            {x: 1000, y: this.state.scrollY}
+                        }
                         dataSource={orderList}
+                        onExpandedRowsChange={() => console.log(1)}
                         pagination={{
                             total: orderList ? orderList.length : 0,
                             pageSize: 10,

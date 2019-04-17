@@ -1,7 +1,18 @@
 .order-block{
     height: 100%;
     .search-bar{
-        
+        padding: 5px 0 10px 0;
+        label{
+            display: inline-block;
+            margin: 5px 0 0 10px;
+            .opitons{
+                width: 100px;
+                margin-left: 5px;
+                &.long{
+                    width: 150px;
+                }
+            }
+        }
     }
     .order-list{
         box-sizing: border-box;
@@ -9,6 +20,7 @@
         word-break: break-all;
         th, td{
             min-width: 50px;
+            max-width: 50px;
             &.orderId, &.domain{
                 min-width: 120px;
             }
