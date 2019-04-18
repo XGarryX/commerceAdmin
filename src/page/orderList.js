@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Table, Input, Select, DatePicker } from 'antd'
+import { Table, Input, Select, DatePicker, Button } from 'antd'
 import axios from 'axios'
 import orderList from '../static/orderList.json'
 import '../style/page/orderList.less'
@@ -10,21 +10,24 @@ class productList extends Component {
     constructor(props) {
         super(props)
         this.handleResize = this.handleResize.bind(this)
+        this.handlePageChange = this.handlePageChange.bind(this)
     }
     state = {
         orderList: [],
         isFetching: true,
         scrollY: 0,
+        size: 'default'
     }
     handlePageChange(page, pageSize) {
         console.log(page, pageSize)
     }
     handleResize = ((win) => {
-        let _lastHeight
+        let _lastHeight, _lastOrderHeight
         return () => {
             const winHeight = win.innerHeight
-            if(_lastHeight != winHeight){
-                const parentElm = document.body.querySelector('#order-block')
+            const parentElm = document.body.querySelector('#order-block')
+            const orderElm = parentElm.querySelector('.order-list')
+            if(_lastOrderHeight != orderElm.offsetHeight || _lastHeight != winHeight){
                 const searchBar = parentElm.querySelector('.search-bar')
                 const pagination = parentElm.querySelector('.ant-pagination')
                 const tabelHeader = parentElm.querySelector('.ant-table-header')
@@ -32,6 +35,7 @@ class productList extends Component {
                 this.setState({
                     scrollY
                 })
+                _lastOrderHeight = orderElm.offsetHeight
             }
             _lastHeight = winHeight
         }
@@ -39,21 +43,8 @@ class productList extends Component {
     handleSeachOptionChange(key, value) {
         this.setState({
             [key]: value
-        })
-    }
-    renderSearchOption(options) {
-        return options.map(item => {
-            const { key, render, title } = item
-            return (
-                <label>
-                    {title}:
-                    {
-                        render(value => {
-                            this.handleSeachOptionChange(key, value)
-                        })
-                    }
-                </label>
-            )
+        }, () => {
+            console.log(this.state)
         })
     }
     componentDidMount() {
@@ -64,6 +55,9 @@ class productList extends Component {
             })
         }, 1000)
         window.addEventListener('resize', this.handleResize)
+    }
+    componentDidUpdate() {
+        this.handleResize()
     }
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleResize)
@@ -179,40 +173,60 @@ class productList extends Component {
         const options = [{
             key: 'department',
             title: '部门',
-            render: handleChange => <Select onChange={e => handleChange(e)}/>
+            render: props => <Select {...props}/>
         }, {
             key: 'domain',
             title: '域名',
-            render: handleChange => <Select onChange={e => handleChange(e)}/>
+            className: "long",
+            render: props => <Select {...props}/>
+        }, {
+            key: 'postState',
+            title: '物流状态',
+            render: props => <Select {...props}/>
+        }, {
+            key: 'logistics',
+            title: '物流',
+            render: props => <Select {...props}/>
+        }, {
+            key: 'area',
+            title: '地区',
+            render: props => <Select {...props}/>
+        }, {
+            key: 'state',
+            title: '订单状态',
+            render: props => <Select {...props}/>
+        }, {
+            key: 'keyWords',
+            title: '关键词',
+            className: "long",
+            render: props => <Input {...props}/>
+        }, {
+            key: 'startTime',
+            title: '起始时间',
+            render: props => <RangePicker {...props} style={{width: 200}}/>
         }]
         return (
             <div className="order-block" id="order-block">
                 <div className="search-bar">
-                    {/* <label>
-                        部门:<Select size="small" className="opitons"></Select>
-                    </label>
-                    <label>
-                        域名:<Select size="small" className="opitons long"></Select>
-                    </label>
-                    <label>
-                        物流状态:<Select size="small" className="opitons"></Select>
-                    </label>
-                    <label>
-                        物流:<Select size="small" className="opitons"></Select>
-                    </label>
-                    <label>
-                        地区:<Select size="small" className="opitons"></Select>
-                    </label>
-                    <label>
-                        订单状态:<Select size="small" className="opitons"></Select>
-                    </label>
-                    <label>
-                        关键词:<Input size="small" className="opitons long" />
-                    </label>
-                    <label>
-                        起始时间:<RangePicker size="small" style={{width: 200}} className="opitons" />
-                    </label> */}
-                    {...this.renderSearchOption(options)}
+                {
+                    options.map(item => {
+                        const { key, render, title, className } = item
+                        const props = {
+                            onChange: e => this.handleSeachOptionChange(key, e.target.value),
+                            className: `opitons ${className || ''}`,
+                            size: 'small'
+                        }
+                        return (
+                            <label key={key}>
+                                {title}:{render(props)}
+                            </label>
+                        )
+                    })
+                }
+                    <p className="search-operating">
+                        <Button type="primary" size={this.state.size}>搜索</Button>
+                        <Button type="primary" icon="download" size={this.state.size}>导出EXCEL</Button>
+                    </p>
                 </div>
                 <div className="order-list">
                     <Table
@@ -226,13 +240,12 @@ class productList extends Component {
                             {x: 1000, y: this.state.scrollY}
                         }
                         dataSource={orderList}
-                        onExpandedRowsChange={() => console.log(1)}
                         pagination={{
                             total: orderList ? orderList.length : 0,
                             pageSize: 10,
                             showTotal: total => `共有${total}条数据`,
                             showSizeChanger: true, 
-                            onChange: this.handlePageChange.bind(this)
+                            onChange: this.handlePageChange
                         }}
                     />
                 </div>

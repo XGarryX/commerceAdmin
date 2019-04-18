@@ -1,0 +1,29 @@
+[{
+    "warehouseId": "1",
+    "warehouseName": "福永仓库",
+    "stock": 77
+}, {
+    "warehouseId": "2",
+    "warehouseName": "Q仓库",
+    "stock": 2260
+}, {
+    "warehouseId": "3",
+    "warehouseName": "T仓库",
+    "stock": 1304
+}, {
+    "warehouseId": "4",
+    "warehouseName": "Q台湾海外",
+    "stock": 10
+}, {
+    "warehouseId": "5",
+    "warehouseName": "Q泰国海外",
+    "stock": 840
+}, {
+    "warehouseId": "6",
+    "warehouseName": "Q马来海外",
+    "stock": 412
+}, {
+    "warehouseId": "7",
+    "warehouseName": "T泰国海外",
+    "stock": 450
+}]

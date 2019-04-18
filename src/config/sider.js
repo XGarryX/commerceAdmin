@@ -18,7 +18,8 @@ export default {
             path: "productEdit"
         }, {
             tabKey: "product-SKU",
-            name: "产品SKU"
+            name: "产品SKU",
+            path: "SKUList"
         }]
     // }, {
     //     key: "purchase",
@@ -91,7 +92,8 @@ export default {
         icon: "inbox",
         item: [{
             tabKey: "warehouse-department",
-            name: "库存管理"
+            name: "库存管理",
+            path: "warehouse"
         }]
     // }, {
     //     key: "edit",

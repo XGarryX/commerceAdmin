@@ -10,10 +10,12 @@ class Tab extends Component {
         this.props.toggleTab(key)
     }
     handleEdit(key) {
-        const {props: {removeTab, toggleTab, tabList, tabKey}} = this
+        const {props: {removeTab, toggleTab, tabList}} = this
         removeTab(key)
-        const defaultKey = tabList[0] && tabList[0].tabKey
-        key === tabKey && defaultKey && toggleTab(defaultKey)
+        const defaultKey = key == tabList[0].tabKey ? 
+                tabList[1] && tabList[1].tabKey || null :
+                tabList[0].tabKey
+        toggleTab(defaultKey)
     }
     render() {
         const {props} = this
