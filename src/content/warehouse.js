@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Table } from 'antd'
 import warehouseList from '../static/warehouse.json'
-import '../style/page/warehouse.less'
+import '../style/content/warehouse.less'
 
 class WareBouse extends Component {
     state = {

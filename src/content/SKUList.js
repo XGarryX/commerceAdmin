@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Table, Input, Select, Button, Modal } from 'antd'
-import '../style/page/SKUList.less'
+import '../style/content/SKUList.less'
 import SKUList from '../static/SKUList.json'
 
 class SKU extends Component {

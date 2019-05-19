@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Table, Input, Button, Icon } from 'antd'
 import Highlighter from 'react-highlight-words'
 import axios from 'axios'
-import '../style/page/productList.less'
+import '../style/content/productList.less'
 import { depm, ader, type } from '../static/add.js'
 
 const toDouble = num => Number(num).toFixed(2)

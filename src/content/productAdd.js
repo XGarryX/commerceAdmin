@@ -5,7 +5,7 @@ import BraftEditor from 'braft-editor'
 import SearchSelect from '../components/SearchSelect'
 import PicturesWall from '../components/PicturesWall'
 import { depm, ader, type, supplier } from '../static/add.js'
-import '../style/page/productAdd.less'
+import '../style/content/productAdd.less'
 import 'braft-editor/dist/index.css'
 
 class productAdd extends Component {

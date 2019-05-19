@@ -11,7 +11,7 @@ class LazyPage extends Component {
     }
     componentWillMount() {
         this.setState({
-            page: lazy(() => import(`../page/${this.props.path}`))
+            page: lazy(() => import(`../content/${this.props.path}`))
         })
     }
     render() {

@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Table, Input, Select, DatePicker, Button } from 'antd'
 import axios from 'axios'
 import orderList from '../static/orderList.json'
-import '../style/page/orderList.less'
+import '../style/content/orderList.less'
 
 const { RangePicker } = DatePicker
 
