@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { Table, Input, Button, Icon } from 'antd'
-import Highlighter from 'react-highlight-words'
 import axios from 'axios'
 import '../style/content/productList.less'
 import { depm, ader, type } from '../static/add.js'
@@ -51,6 +50,21 @@ const data = [{
     stock: 20,
     state: 0,
     operation: '编辑'
+}, {
+    key: '5',
+    ID: '001',
+    type: '玩具',
+    ADer: '林瑞福',
+    picture: '',
+    name: '玩具',
+    iname: 'M3-玩具',
+    SKU: 'S0404103724',
+    buyPrice: 4.3,
+    selfPrice: 10,
+    money: '',
+    stock: 20,
+    state: 0,
+    operation: '编辑'
 }]
 
 class productList extends Component {
@@ -84,7 +98,7 @@ class productList extends Component {
             <div style={{ padding: 8 }}>
                 <Input
                     ref={node => { this.searchInput = node; }}
-                    placeholder={placeholder ? placeholder : `Search ${dataIndex}`}
+                    placeholder={placeholder ? placeholder : `搜索 ${dataIndex}`}
                     value={selectedKeys[0]}
                     onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
                     onPressEnter={() => this.handleSearch(confirm, selectedKeys, dataIndex)}
@@ -110,23 +124,29 @@ class productList extends Component {
         ),
         filterIcon: filtered => <Icon type="search" style={{ color: filtered ? '#1890ff' : undefined }} />,
         onFilterDropdownVisibleChange: visible => visible && setTimeout(() => this.searchInput.select()),
-        render: (text) => (
-            <Highlighter
-                highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-                searchWords={[this.state.searchText[dataIndex]]}
-                autoEscape
-                textToHighlight={text.toString()}
-          />
-        ),
+        // render: (text) => (
+        //     <Highlighter
+        //         highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+        //         searchWords={[this.state.searchText[dataIndex]]}
+        //         autoEscape
+        //         textToHighlight={text.toString()}
+        //   />
+        // ),
     })
     handleSearch = (confirm, selectedKeys, dataIndex) => {
+        const { data, searchText } = this.state
+        confirm()
         this.setState({
-            searchText: Object.assign(this.state.searchText, {
+            searchText: Object.assign(searchText, {
                 [dataIndex]: selectedKeys[0]
             })
         })
+        setTimeout(() => {
+            this.setState({
+                data: data.filter(item => item[dataIndex].toString().toLowerCase().includes(selectedKeys[0].toLowerCase()))
+            })
+        }, 500)
         this.searchProduct()
-        confirm()
     }
     handleReset = (clearFilters, dataIndex) => {
         this.setState({
@@ -234,7 +254,8 @@ class productList extends Component {
                         showTotal: total => `共有${total}条数据`,
                         hideOnSinglePage: true,
                         showSizeChanger: true, 
-                        onChange: this.handlePageChange
+                        onChange: this.handlePageChange,
+                        pageSize: 1
                     }}
                 />
             </div>

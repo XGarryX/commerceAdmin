@@ -14,7 +14,9 @@ const defaultStore = {
     },
     sider: {
         collapsed: false
-    }
+    },
+    token: null,
+    api: 'http://localhost:8081/api'
 }
 const store = createStore(appReducer, defaultStore)
 

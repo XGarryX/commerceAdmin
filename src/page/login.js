@@ -1,43 +1,109 @@
 import React, { Component } from 'react'
-import { Form, Icon, Input, Button } from 'antd'
+import { withRouter } from 'react-router-dom'
+import { connect } from 'react-redux'
+import { Form, Icon, Input, Button, message } from 'antd'
 import JsEncrypt  from 'jsencrypt'
+import base64url from "base64url"
 import axios from 'axios'
+import { changeToken } from '../redux/action/token'
 import '../style/page/login.less'
 
 class Login extends Component {
-    state = {
-        api: 'http://localhost:8081/api'
+    _isMounted = false
+
+    constructor(props) {
+        super(props)
+
+        this.codeLoad = this.codeLoad.bind(this)
+        this.codeError = this.codeError.bind(this)
+        this.changeCode = this.changeCode.bind(this)
+        this.handleSubmit = this.handleSubmit.bind(this)
+
+        let setState = this.setState
+        this.setState = function () {
+            if ( this._isMounted ) return
+            setState.call(this, ...arguments)
+        }
     }
-    handleSubmit = e => {
+    state = {
+        hasCodeLoad: false,
+        isLoggingIn: false,
+    }
+    loginFail(msg) {
+        this.setState({
+            isLoggingIn: false
+        }, () => message.info(msg))
+    }
+    handleSubmit(e) {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                const { api, pubilcKey } = this.state
+                const { publicKey } = this.state
+                const { api } = this.props
                 const jse = new JsEncrypt ()
-                jse.setPublicKey(pubilcKey)
-                axios.post(`${api}/user/basic/register`, {
+                jse.setPublicKey(publicKey)
+                axios.post(`${api}/cuser/basic/login`, {
                     phone: jse.encrypt(values.phone),
                     password: jse.encrypt(values.password),
-                    repeatPassword: jse.encrypt(values.password),
                     verityCode: values.verityCode,
                 })
-                    .then(res => console.log(res))
+                    .then(({data}) => {
+                        if (data.resultCode == 200) {
+                            this.props.changeToken(data.token)
+                            localStorage.setItem('token', data.token)
+                            this.props.history.push('/admin')
+                        }
+                        this.loginFail(data.resultMessage)
+                    })
+                    .catch(e => {
+                        this.loginFail(e.message)
+                    })
+                    this.setState({
+                    isLoggingIn: true
+                })
+                this.changeCode()
             }
         })
     }
-    changeCode = e => {
-        e.target.src = `${this.state.api}/common/kaptcha?${Math.random()}`
+    codeLoad() {
+        this.setState({hasCodeLoad: true})
+    }
+    codeError() {
+        this.setState({hasCodeLoad: true})
+
+    }
+    changeCode() {
+        this.setState({
+            codeUrl: `${this.props.api}/common/kaptcha?${Math.random()}`,
+            hasCodeLoad: false
+        })
     }
     componentDidMount() {
-        axios.get(`${this.state.api}/common/publicKey`)
-            .then(res => {
+        const token = localStorage.getItem('token')
+        if(token && JSON.parse(base64url.decode(token.split(".")[1])).exp * 1000 > new Date().getTime()) {
+            this.props.history.push('/admin')
+        }
+        this.changeCode()
+        axios.get(`${this.props.api}/common/publicKey`, {}, {
+            timeout: 1000 * 30
+        })
+            .then(({data: { publicKey }}) => {
                 this.setState({
-                    pubilcKey: res.data.ext1
+                    publicKey
                 })
             })
+            .catch(e => {
+                message.info(e.message)
+            })
+    }
+    componentWillUnmount() {
+        this._isMounted = true
+        this.codeLoad= null
+        this.codeError = null
     }
     render() {
         const { getFieldDecorator } = this.props.form
+        const { codeUrl, hasCodeLoad, isLoggingIn } = this.state
         return (
             <div className="login">
                 <div className="background"></div>
@@ -58,9 +124,8 @@ class Login extends Component {
                             {getFieldDecorator('password', {
                                 rules: [{ required: true, message: '请输入密码!' }],
                             })(
-                                <Input
+                                <Input.Password
                                     prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                                    type="password"
                                     placeholder="密码"
                                 />,
                             )}
@@ -70,27 +135,44 @@ class Login extends Component {
                                 rules: [{ required: true, message: '请输入验证码!' }],
                             })(
                                 <p>
-                                    <Input placeholder="验证码" className="login-form-code"/>
+                                    <Input placeholder="验证码" className="login-form-code" allowClear />
                                     <img
-                                        src={`${this.state.api}/common/kaptcha`}
+                                        src={codeUrl}
                                         className="login-form-kaptcha"
                                         onClick={this.changeCode}
-                                    />                                
+                                        onLoad={this.codeLoad}
+                                        onError={this.codeError}
+                                        style={{display: hasCodeLoad ? '' : 'none'}}
+                                    />
+                                    { !hasCodeLoad && <span style={{float: 'right'}}>加载中...</span> }
                                 </p>,
                             )}
                         </Form.Item>
                         <Form.Item>
-                            <Button type="primary" size ="large" htmlType="submit" className="login-form-button">
+                            <Button type="primary" size ="large" htmlType="submit" className="login-form-button" loading={isLoggingIn}>
                                 登录
                             </Button>
                         </Form.Item>
                     </Form>
                 </div>
-                <iframe id="code-iframe" />
             </div>
         )
     }
 }
 
+const mapStoreToProps = store => {
+    const { api } = store
+    return {
+        api: store.api
+    }
+}
+  
+const mapDispathToProps = dispatch => ({
+    changeToken: token => dispatch(changeToken(token)),
+})
+
 const WrappedNormalLoginForm = Form.create({ name: 'normal_login' })(Login);
-export default WrappedNormalLoginForm
+export default connect(
+    mapStoreToProps,
+    mapDispathToProps
+)(withRouter(WrappedNormalLoginForm))

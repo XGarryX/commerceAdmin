@@ -1,0 +1,66 @@
+.produceAttrs{
+    @border: 1px solid #ddd;
+    border: @border;
+    margin-top: 10px;
+    .attr-block{
+        &:not(:first-child) .attr-header{
+            border-top: @border;
+        }
+        .attr-tabel{
+            .attr-th{
+                border-bottom: @border;
+                background: #fafafa;
+            }
+            .attr-th, .attr-td{
+                display: inline-block;
+                width: 33.33%;
+                padding: 0 5px;
+                line-height: 34px;
+                box-sizing: border-box;
+                &:not(:last-child){
+                    border-right: @border;
+                }
+                &.attrName{
+                    button{
+                        margin-left: 10px;
+                    }
+                }
+                input, .ant-select{
+                    max-width: 250px;
+                }
+            }
+        }
+        .productList{
+            padding: 10px;
+            td, th{
+                line-height: 40px;
+                padding: 0 5px !important;
+            }
+            .title{
+                width: 10%;
+                max-width: 10%;
+            }
+            .id{
+                width: 10%;
+                max-width: 10%;
+            }
+            .attrId, .price, .sort, .delete{
+                width: 5%;
+                max-width: 5%;
+            }
+            .picture{
+                width: 20%;
+                min-width: 20%;
+            }
+        }
+        .ant-table-footer{
+            padding: 8px;
+        }
+        .ant-empty{
+            display: none;
+        }
+    }
+    & > button{
+        margin: 10px;
+    }
+}

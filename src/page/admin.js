@@ -3,6 +3,8 @@ import {
   Layout, Menu, Icon,
 } from 'antd'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
+import base64url from "base64url"
 import Tab from '../components/Tab'
 import PageLoadable from '../components/PageLoadable'
 import { addTab, toggleTab } from '../redux/action/tab'
@@ -28,6 +30,16 @@ class Admin extends Component {
   }
   onCollapse(collapsed) {
     this.props.taggleSider(collapsed);
+  }
+  componentWillMount() {
+    // const token = localStorage.getItem('token')
+    // if(token) {
+    //   if(JSON.parse(base64url.decode(token.split(".")[1])).exp * 1000 < new Date().getTime()) {
+    //     this.props.history.push('/login')
+    //   }
+    // } else {
+    //   this.props.history.push('/login')
+    // }
   }
   render() {
     return (
@@ -81,11 +93,11 @@ class Admin extends Component {
 }
 
 const mapStoreToProps = store => {
-  const {tab: {tabList, tabKey}, sider: { collapsed }} = store
+  const {tab: {tabList, tabKey}, sider: { collapsed } } = store
   return {
       tabList,
       tabKey,
-      collapsed
+      collapsed,
   }
 }
 
@@ -95,7 +107,7 @@ const mapDispathToProps = dispatch => ({
   taggleSider: state => dispatch(taggleSider(state)),
 })
 
-export default connect(
+export default withRouter(connect(
   mapStoreToProps,
   mapDispathToProps
-)(Admin)
+)(Admin))

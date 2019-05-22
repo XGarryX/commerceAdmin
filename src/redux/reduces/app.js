@@ -1,9 +1,12 @@
 import tabReduce from './tab'
 import siderState from './sider'
+import token from './token'
 
 export default (state = {}, action) => {
     return {
         tab: tabReduce(state.tab, action),
-        sider: siderState(state.sider, action)
+        sider: siderState(state.sider, action),
+        token: token(state.token, action),
+        api: state.api
     }
 }

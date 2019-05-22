@@ -5,6 +5,7 @@
   "dependencies": {
     "antd": "^3.16.2",
     "axios": "^0.18.0",
+    "base64url": "^3.0.1",
     "braft-editor": "^2.2.9",
     "jsencrypt": "^3.0.0-rc.1",
     "jsrsasign": "^8.0.12",
