@@ -18,8 +18,16 @@ class PicturesWall extends Component {
     handleCancel() {
         this.setState({ previewVisible: false })
     }
-    handleChange({ fileList }) {
-        this.setState({ fileList })
+    handleChange(fileObj) {
+        let {file, file: {response}, fileList} = fileObj
+        if (file.status == "error") {
+            const index = fileList.findIndex(item => item.uid == file.uid)
+            fileList = [...fileList.slice(0, index), ...fileList.slice(index + 1, fileList.length)]
+            message.error('上传失败')
+        } else if (file.status == "done" && response.resultCode == "200") {
+            message.success('上传成功')
+        }
+        this.beforeUpload(file) && this.setState({ fileList }, () => this.props.onImageUpload(this.state.fileList))
     }
     handlePreview(file) {
         this.setState({
@@ -40,7 +48,7 @@ class PicturesWall extends Component {
     }
     render() {
         const { previewVisible, previewImage, fileList } = this.state
-        const { token } = this.props
+        const { token, api } = this.props
         const maxImageLength = 4
         const uploadButton = (
             <div>
@@ -52,9 +60,10 @@ class PicturesWall extends Component {
             <div className="clearfix">
                 <Upload
                     listType="picture-card"
+                    action={`${api}/business/product/control/image/upload`}
+                    headers={{Authorization: this.props.token}}
                     fileList={fileList}
                     multiple
-                    beforeUpload={this.beforeUpload}
                     onPreview={this.handlePreview}
                     onChange={this.handleChange}
                     headers={{

@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
 import { Table, Input, InputNumber, Upload, Button, Icon, Select } from 'antd'
 import axios from 'axios'
 import '../style/components/ProduceAttrs.less'
@@ -8,9 +9,36 @@ class ProduceAttrs extends Component {
         super(props)
 
         this.addAttrList = this.addAttrList.bind(this)
+        this.uploadChange = this.uploadChange.bind(this)
     }
     state = {
         attrs: []
+    }
+    upDateState(state) {
+        this.setState(state, () => {
+            this.props.onAttrChange(this.state.attrs)
+        })
+    }
+    uploadChange({ file }, attrObj, date) {
+        const { attrs } = this.state
+        const index = attrs.indexOf(attrObj)
+        const targetAttr = attrs[index]
+        const attrValuesIndex = targetAttr.attrValues.findIndex(item => item.date == date)
+        if (file.status === "done") {
+            targetAttr.attrValues[attrValuesIndex] = Object.assign(targetAttr.attrValues[attrValuesIndex], {
+                imageUid: file.uid
+            })
+            this.upDateState({
+                attrs
+            })
+        } else if (file.status === "removed") {
+            targetAttr.attrValues[attrValuesIndex] = Object.assign(targetAttr.attrValues[attrValuesIndex], {
+                imageUid: null
+            })
+            this.upDateState({
+                attrs
+            })
+        }
     }
     //添加属性
     addAttrList() {
@@ -19,12 +47,9 @@ class ProduceAttrs extends Component {
         const attr = {
             must: false,
             date,
-            attrValues: [{
-                date,
-                key: date
-            }]
+            attrValues: []
         }
-        this.setState({
+        this.upDateState({
             attrs: [...attrs, attr]
         })
     }
@@ -32,7 +57,7 @@ class ProduceAttrs extends Component {
     deleteAttr(attr) {
         const { attrs, attrs: { length } } = this.state
         const index = attrs.indexOf(attr)
-        this.setState({
+        this.upDateState({
             attrs: [...attrs.slice(0, index), ...attrs.slice(index + 1, length)]
         })
     }
@@ -40,7 +65,7 @@ class ProduceAttrs extends Component {
     attrChange(value, key, attrObj) {
         const { attrs, attrs: { length } } = this.state
         const index = attrs.indexOf(attrObj)
-        this.setState({
+        this.upDateState({
             attrs: [...attrs.slice(0, index), Object.assign(attrs[index], {
                 [key]: value
             }), ...attrs.slice(index + 1, length)]
@@ -53,7 +78,7 @@ class ProduceAttrs extends Component {
         const targetAttr = attrs[index]
         const date = new Date().getTime()
         targetAttr.attrValues = [...targetAttr.attrValues, {date, key: date}]
-        this.setState({
+        this.upDateState({
             attrs
         })
     }
@@ -64,7 +89,7 @@ class ProduceAttrs extends Component {
         const targetAttr = attrs[index]
         const attrValuesIndex = targetAttr.attrValues.findIndex(item => item.date == key)
         targetAttr.attrValues = [...targetAttr.attrValues.slice(0, attrValuesIndex), ...targetAttr.attrValues.slice(attrValuesIndex + 1, targetAttr.attrValues.length)]
-        this.setState({
+        this.upDateState({
             attrs
         })
     }
@@ -77,9 +102,9 @@ class ProduceAttrs extends Component {
         targetAttr.attrValues[attrValuesIndex] = Object.assign(targetAttr.attrValues[attrValuesIndex], {
             [key]: value
         })
-        this.setState({
+        this.upDateState({
             attrs
-        }, () => console.log(this.state))
+        })
     }
     //渲染属性元素
     renderAttr(attr) {
@@ -91,28 +116,33 @@ class ProduceAttrs extends Component {
             title: '属性标题',
             className: 'title',
             dataIndex: 'title',
-            render: () => <Input placeholder="属性值标题" onChange={e => this.changeAttrValue(attr, attr.date, 'title', e.target.value)} />,
+            render: (value, {date}) => <Input placeholder="属性值标题" onChange={e => this.changeAttrValue(attr, date, 'title', e.target.value)} />,
         }, {
             title: '标识',
             className: 'id',
             dataIndex: 'id',
-            render: () => <Input placeholder="英文标识如：red1" onChange={e => this.changeAttrValue(attr, attr.date, 'id', e.target.value)} />,
+            render: (value, {date}) => <Input placeholder="英文标识如：red1" onChange={e => this.changeAttrValue(attr, date, 'id', e.target.value)} />,
         }, {
             title: '价格',
             className: 'price',
             dataIndex: 'price',
-            render: () => <InputNumber placeholder="价格" min={0} onChange={e => this.changeAttrValue(attr, attr.date, 'price', e)} />,
+            render: (value, {date}) => <InputNumber placeholder="价格" min={0} onChange={e => this.changeAttrValue(attr, date, 'price', e)} />,
         }, {
             title: '排序',
             className: 'sort',
             dataIndex: 'sort',
-            render: () => <Input placeholder="排序" onChange={e => this.changeAttrValue(attr, attr.date, 'sort', e.target.value)}/>,
+            render: (value, {date}) => <Input placeholder="排序" onChange={e => this.changeAttrValue(attr, date, 'sort', e.target.value)}/>,
         }, {
             title: '图片',
             className: 'picture',
-            dataIndex: 'picture',
-            render: () => (
-                <Upload action="" showUploadList={false}>
+            dataIndex: 'imageUid',
+            render: (value, {date}) => (
+                <Upload
+                    action={`${this.props.api}/business/product/control/image/upload`}
+                    disabled={value ? true : false}
+                    headers={{Authorization: this.props.token}}
+                    onChange={e => this.uploadChange(e, attr, date)}
+                >
                     <Button>
                         <Icon type="upload" /> Upload
                     </Button>
@@ -122,7 +152,7 @@ class ProduceAttrs extends Component {
             title: '操作',
             className: 'delete',
             dataIndex: 'date',
-            render: date => <a onClick={() => this.deleteAttrValue(attr, date)}>删除</a>,
+            render: (value, {date}) => <a onClick={() => this.deleteAttrValue(attr, date)}>删除</a>,
         },]
         return (
             <div className="attr-block" key={attr.date}>
@@ -156,15 +186,15 @@ class ProduceAttrs extends Component {
                         </div>
                     </div>
                 </div>
-                <Table
+                {attr.attrValues.length > 0 && <Table
                     size="small"
                     bordered={true}
                     className="productList"
                     columns={attrsColumn}
                     dataSource={attr.attrValues}
                     pagination={false}
-                    footer={() => <Button type="primary" size="small" onClick={() => this.addAttrValue(attr)}>+属性值</Button>}
-                />
+                />}
+                <Button type="primary" size="small" className="addAttrValue" onClick={() => this.addAttrValue(attr)}>+属性值</Button>
             </div>
         )
     }
@@ -186,4 +216,14 @@ class ProduceAttrs extends Component {
     }
 }
 
-export default ProduceAttrs
+const mapStoreToProps = store => {
+    const { token, api } = store
+    return {
+        token,
+        api
+    }
+}
+
+export default connect(
+    mapStoreToProps
+)(ProduceAttrs)
