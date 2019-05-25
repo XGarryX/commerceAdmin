@@ -116,17 +116,17 @@ class ProduceAttrs extends Component {
             title: '属性标题',
             className: 'title',
             dataIndex: 'title',
-            render: (value, {date}) => <Input placeholder="属性值标题" onChange={e => this.changeAttrValue(attr, date, 'title', e.target.value)} />,
-        }, {
-            title: '标识',
-            className: 'id',
-            dataIndex: 'id',
-            render: (value, {date}) => <Input placeholder="英文标识如：red1" onChange={e => this.changeAttrValue(attr, date, 'id', e.target.value)} />,
-        }, {
-            title: '价格',
-            className: 'price',
-            dataIndex: 'price',
-            render: (value, {date}) => <InputNumber placeholder="价格" min={0} onChange={e => this.changeAttrValue(attr, date, 'price', e)} />,
+            render: (value, {date}) => <Input placeholder="属性值标题" onChange={e => this.changeAttrValue(attr, date, 'name', e.target.value)} />,
+        // }, {
+        //     title: '标识',
+        //     className: 'id',
+        //     dataIndex: 'id',
+        //     render: (value, {date}) => <Input placeholder="英文标识如：red1" onChange={e => this.changeAttrValue(attr, date, 'id', e.target.value)} />,
+        // }, {
+        //     title: '价格',
+        //     className: 'price',
+        //     dataIndex: 'price',
+        //     render: (value, {date}) => <InputNumber placeholder="价格" min={0} onChange={e => this.changeAttrValue(attr, date, 'price', e)} />,
         }, {
             title: '排序',
             className: 'sort',
@@ -165,9 +165,9 @@ class ProduceAttrs extends Component {
                         <div className="attr-th">
                             <span>排序</span>
                         </div>
-                        <div className="attr-th">
+                        {/* <div className="attr-th">
                             <span>是否必须</span>
-                        </div>
+                        </div> */}
                     </div>
                     <div className="attr-body">
                         <div className="attr-tr">
@@ -177,12 +177,12 @@ class ProduceAttrs extends Component {
                             <div className="attr-td">
                                 <Input size="small" onChange={e => this.attrChange(e.target.value, "srot", attr)} />
                             </div>
-                            <div className="attr-td">
+                            {/* <div className="attr-td">
                                 <Select size="small" defaultValue="false" onChange={e => this.attrChange(e, "must", attr)} >
                                     <Select.Option value="false">否</Select.Option>
                                     <Select.Option value="true">是</Select.Option>
                                 </Select>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </div>

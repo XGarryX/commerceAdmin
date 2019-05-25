@@ -81,9 +81,9 @@ class productAdd extends Component {
         })
         return resArr
     }
-    onImageUpload(bannerImgs) {
+    onImageUpload(images) {
         this.setState({
-            bannerImgs
+            images
         })
     }
     filterOption(input, option) {
@@ -133,12 +133,12 @@ class productAdd extends Component {
     }
     submit() {
         const key = [{
-            name: 'departmentId', msg: '请选择部门'
+        //     name: 'departmentId', msg: '请选择部门'
+        // // }, {
+        // //     name: 'ador', msg: '请选择广告手'
         // }, {
-        //     name: 'ador', msg: '请选择广告手'
-        }, {
-            name: 'catalogId', msg: '请选择商品分类'
-        }, {
+        //     name: 'catalogId', msg: '请选择商品分类'
+        // }, {
             name: 'name', msg: '请填写商品名称'
         }, {
             name: 'internalName', msg: '请填写内部名称'
@@ -151,11 +151,11 @@ class productAdd extends Component {
         }, {
             name: 'merchant', msg: '请选择供应商'
         }, {
-            name: 'url', msg: '请填写采购链接'
-        }, {
-            name: 'bannerImgs', msg: '请至少上传一张图集', attr: 'length'
+            name: 'buy_link', msg: '请填写采购链接'
+        // }, {
+        //     name: 'images', msg: '请至少上传一张图集', attr: 'length'
         }]
-        let param = {}
+        let param = {spec: []}
         const { attrs } = this.state
         for(let i = 0;i < key.length;i++){
             const { name, msg, attr } = key[i]
@@ -170,18 +170,33 @@ class productAdd extends Component {
         //验证商品属性是否完整
         for(let i = 0;i < attrs.length;i++){
             let value = attrs[i]
-            if(!value.attrName || !value.srot){
-                message.error('请填写完整的属性')
+            const { attrName, attrSrot } = value
+            if(!attrName){
+                message.error('请填写属性名称')
                 return
             }
+            let nameVo = {"orderByName": attrSrot}
             for(let j = 0;j < value.attrValues.length;j++){
                 let aValue = value.attrValues[j]
-                if(!aValue.title || !aValue.id || !(aValue.price + "")|| !aValue.title){
-                    message.error('请填写完整的属性值')
+                let { name, sort } = aValue
+                if(!name){
+                    message.error('请填写属性值名称')
                     return
                 }
+                let spec = {
+                    name: attrName,
+                    value: name,
+                    valueVo: {
+                        "orderByValue": sort
+                    }
+                }
+                if(j == 0){
+                    spec.nameVo = nameVo
+                }
+                param.spec.push(spec)
             }
         }
+        console.log(param)
     }
     componentDidMount() {
         this.getDepartments()
