@@ -36,15 +36,22 @@ class PicturesWall extends Component {
         });
     }
     beforeUpload({type, size}) {
-        const isJPG = type === 'image/jpeg';
+        const isJPG = type.match('image')
         if (!isJPG) {
-            message.error('请上传图片！');
+            message.error('请上传图片！')
         }
-        const isLt2M = size / 1024 / 1024 < 2;
+        const isLt2M = size / 1024 / 1024 < 2
         if (!isLt2M) {
-            message.error('图片的大小超过2MB');
+            message.error('图片的大小超过2MB')
         }
-        return isJPG && isLt2M;
+        return isJPG && isLt2M
+    }
+    componentWillReceiveProps (newProps) {
+        newProps.childUpInit && this.setState({
+            previewVisible: false,
+            previewImage: '',
+            fileList: [],
+        })
     }
     render() {
         const { previewVisible, previewImage, fileList } = this.state

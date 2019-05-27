@@ -8,6 +8,7 @@ import base64url from "base64url"
 import Tab from '../components/Tab'
 import PageLoadable from '../components/PageLoadable'
 import { addTab, toggleTab } from '../redux/action/tab'
+import { updateTime, setTimeFn } from '../redux/action/app'
 import { taggleSider } from '../redux/action/sider'
 import siderData from '../config/sider.js'
 import '../style/page/admin.less'
@@ -24,7 +25,9 @@ class Admin extends Component {
     this.handleClick = this.handleClick.bind(this)
   }
   handleClick(tab) {
-    const {props: {toggleTab, addTab, tabList}} = this
+    const { updateTime, checkTimeOut, toggleTab, addTab, tabList } = this.props
+    checkTimeOut()
+    updateTime(new Date().getTime())
     !tabList.find(item => item.tabKey === tab.tabKey) && addTab(tab)
     toggleTab(tab.tabKey)
   }
@@ -40,6 +43,7 @@ class Admin extends Component {
     // } else {
     //   this.props.history.push('/login')
     // }
+    this.props.setTimeFn(this.props.history.push)
   }
   render() {
     return (
@@ -93,11 +97,12 @@ class Admin extends Component {
 }
 
 const mapStoreToProps = store => {
-  const {tab: {tabList, tabKey}, sider: { collapsed } } = store
+  const {tab: {tabList, tabKey}, sider: { collapsed }, lastTime: { checkTimeOut } } = store
   return {
       tabList,
       tabKey,
       collapsed,
+      checkTimeOut
   }
 }
 
@@ -105,6 +110,8 @@ const mapDispathToProps = dispatch => ({
   addTab: tabKey => dispatch(addTab(tabKey)),
   toggleTab: tabKey => dispatch(toggleTab(tabKey)),
   taggleSider: state => dispatch(taggleSider(state)),
+  updateTime: time => dispatch(updateTime(time)),
+  setTimeFn: fn => dispatch(setTimeFn(fn)),
 })
 
 export default withRouter(connect(

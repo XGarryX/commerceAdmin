@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Table, Input, InputNumber, Upload, Button, Icon, Select } from 'antd'
-import axios from 'axios'
 import '../style/components/ProduceAttrs.less'
 
 class ProduceAttrs extends Component {
@@ -198,8 +197,10 @@ class ProduceAttrs extends Component {
             </div>
         )
     }
-    componentDidMount() {
-        
+    componentWillReceiveProps (newProps) {
+        newProps.childUpInit && this.setState({
+            attrs: []
+        })
     }
     render() {
         const { attrs } = this.state

@@ -1,76 +1,39 @@
 import React, { Component } from 'react'
-import { Table, Input, Button, Icon } from 'antd'
+import { Table, Input, Button, Icon, Modal } from 'antd'
+import { connect } from 'react-redux'
 import axios from 'axios'
 import '../style/content/productList.less'
-import { depm, ader, type } from '../static/add.js'
-
-const toDouble = num => Number(num).toFixed(2)
-const data = [{
-    key: '2',
-    ID: '001',
-    type: '服装',
-    ADer: '陈卓锐',
-    picture: '',
-    name: '上衣',
-    iname: 'M1-上衣',
-    SKU: 'S0406163526',
-    buyPrice: 7,
-    selfPrice: 15,
-    money: '',
-    stock: 99,
-    state: 1,
-    operation: '编辑'
-}, {
-    key: '3',
-    ID: '002',
-    type: '背包',
-    ADer: '陈卓杰',
-    picture: '',
-    name: '背包',
-    iname: 'M2-背包',
-    SKU: 'S0404182323',
-    buyPrice: 40,
-    selfPrice: 120,
-    money: '',
-    stock: 66,
-    state: 1,
-    operation: '编辑'
-}, {
-    key: '4',
-    ID: '003',
-    type: '玩具',
-    ADer: '林瑞福',
-    picture: '',
-    name: '玩具',
-    iname: 'M3-玩具',
-    SKU: 'S0404103724',
-    buyPrice: 4.3,
-    selfPrice: 10,
-    money: '',
-    stock: 20,
-    state: 0,
-    operation: '编辑'
-}, {
-    key: '5',
-    ID: '001',
-    type: '玩具',
-    ADer: '林瑞福',
-    picture: '',
-    name: '玩具',
-    iname: 'M3-玩具',
-    SKU: 'S0404103724',
-    buyPrice: 4.3,
-    selfPrice: 10,
-    money: '',
-    stock: 20,
-    state: 0,
-    operation: '编辑'
-}]
 
 class productList extends Component {
+    constructor(props) {
+        super(props)
+
+        this.handlePageChange = this.handlePageChange.bind(this)
+    }
     state = {
+        previewVisible: false,
+        previewImage: '',
         isFetching: true,
-        searchText: {}
+        searchText: {},
+        pageSize: 10,
+        pageNo: 1,
+    }
+    getData(url, method, data) {
+        const { api, token } = this.props
+        return axios({
+            url: api + url,
+            method,
+            data,
+            headers: {
+                Authorization: token
+            }
+        })
+    }
+    //记录操作时间
+    operating() {
+        const { checkTimeOut, updateTime } = this.props
+        checkTimeOut()
+        updateTime(new Date().getTime())
     }
     searchProduct() {
         this.setState({
@@ -124,55 +87,67 @@ class productList extends Component {
         ),
         filterIcon: filtered => <Icon type="search" style={{ color: filtered ? '#1890ff' : undefined }} />,
         onFilterDropdownVisibleChange: visible => visible && setTimeout(() => this.searchInput.select()),
-        // render: (text) => (
-        //     <Highlighter
-        //         highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-        //         searchWords={[this.state.searchText[dataIndex]]}
-        //         autoEscape
-        //         textToHighlight={text.toString()}
-        //   />
-        // ),
     })
     handleSearch = (confirm, selectedKeys, dataIndex) => {
-        const { data, searchText } = this.state
+        this.operating()
         confirm()
         this.setState({
             searchText: Object.assign(searchText, {
                 [dataIndex]: selectedKeys[0]
             })
-        })
-        setTimeout(() => {
-            this.setState({
-                data: data.filter(item => item[dataIndex].toString().toLowerCase().includes(selectedKeys[0].toLowerCase()))
-            })
-        }, 500)
+        }, () => console.log(this.state.searchText))
         this.searchProduct()
     }
     handleReset = (clearFilters, dataIndex) => {
+        this.operating()
         this.setState({
             searchText: Object.assign(this.state.searchText, {
                 [dataIndex]: ''
             })
-        })
+        }, () => console.log(this.state.searchText))
         this.searchProduct()
         clearFilters();
     }
-    handlePageChange(page, pageSize) {
-        console.log(page, pageSize)
+    handlePageChange(pageNo, pageSize) {
+        this.operating()
+        this.setState({
+            pageNo,
+            pageSize
+        })
+    }
+    //查看图片
+    checkPic(url) {
+        this.setState({
+            previewImage: url,
+            previewVisible: true
+        })
     }
     componentDidMount() {
-        setTimeout(() => {
-            this.setState({
-                depm,
-                ader,
-                type,
-                data: data,
-                isFetching: false
+        const { pageSize, pageNo } = this.state
+        this.setState({
+            isFetching: true
+        })
+        axios.all([
+            this.getData('/product/infos', 'GET', {pageSize, pageNo}),
+            this.getData('/product/catalogs', 'GET', {pageSize, pageNo}),
+        ])
+            .then(res => {
+                let keys = ['data', 'catalogs']
+                let obj = {}
+                res.forEach(({data: {list}}, index) => {
+                    obj[keys[index]] = list
+                })
+                this.setState(obj, () => console.log(this.state))
             })
-        }, 1000)
+            .catch(err => console.log(err))
+            .finally(() => {
+                this.setState({
+                    isFetching: false
+                })
+            })
     }
     render() {
-        const { isFetching, data } = this.state
+        const { isFetching, data, catalogs, pageSize, previewVisible, previewImage } = this.state
         const columns = [{
             title: 'ID',
             className: 'ID',
@@ -180,19 +155,21 @@ class productList extends Component {
             ...this.getColumnSearchProps('ID'),
         }, {
             title: '分类',
-            className: 'type',
-            dataIndex: 'type',
-            ...this.getColumnSearchProps('type'),
+            className: 'catalogId',
+            dataIndex: 'catalogId',
+            render: id => <span>{catalogs.find(item => item.id == id).itemValue}</span>,
+            ...this.getColumnSearchProps('catalogId'),
         }, {
             title: '广告手',
-            className: 'ADer',
-            dataIndex: 'ADer',
-            ...this.getColumnSearchProps('Ader'),
+            className: 'ader',
+            dataIndex: 'ader',
+            render: id => <span>111</span>,
+            ...this.getColumnSearchProps('ader'),
         }, {
             title: '产品图片',
             className: 'picture',
             dataIndex: 'picture',
-            render: url => <a href='javascript:;'>查看</a>,
+            render: url => <a onClick={url => this.checkPic('http://image.garry.fun/image/product/1544499402808.jpg')}>查看</a>,
         }, {
             title: '产品名',
             className: 'name',
@@ -200,9 +177,9 @@ class productList extends Component {
             ...this.getColumnSearchProps('name'),
         }, {
             title: '内部名',
-            className: 'iname',
-            dataIndex: 'iname',
-            ...this.getColumnSearchProps('iname'),
+            className: 'internalName',
+            dataIndex: 'internalName',
+            ...this.getColumnSearchProps('internalName'),
         }, {
             title: 'SKU',
             className: 'SKU',
@@ -210,19 +187,19 @@ class productList extends Component {
             ...this.getColumnSearchProps('SKU'),
         }, {
             title: '进货价',
-            className: 'buyPrice',
-            dataIndex: 'buyPrice',
-            render: num => <span>{toDouble(num)}</span>,
-            ...this.getColumnSearchProps('buyPrice', '高于X eg:60'),
+            className: 'purchasePrice',
+            dataIndex: 'purchasePrice',
+            render: num => <span>{num}</span>,
+            ...this.getColumnSearchProps('purchasePrice', '高于X eg:60'),
         }, {
             title: '销售价',
-            className: 'selfPrice',
-            dataIndex: 'selfPrice',
-            render: num => <span>{toDouble(num)}</span>,
+            className: 'price',
+            dataIndex: 'price',
+            render: num => <span>{num}</span>,
         }, {
             title: '各地区货币价格',
-            className: 'money',
-            dataIndex: 'money',
+            className: 'pricestr',
+            dataIndex: 'pricestr',
         }, {
             title: '库存',
             className: 'stock',
@@ -249,18 +226,37 @@ class productList extends Component {
                     className="productList"
                     columns={columns}
                     dataSource={data}
+                    rowKey="id"
                     pagination={{
                         total: data ? data.length : 0,
                         showTotal: total => `共有${total}条数据`,
-                        hideOnSinglePage: true,
                         showSizeChanger: true, 
                         onChange: this.handlePageChange,
-                        pageSize: 1
+                        pageSize
                     }}
                 />
+                <Modal visible={previewVisible} footer={null} onCancel={() => this.setState({ previewVisible: false })}>
+                    <img alt="example" style={{ width: '100%' }} src={previewImage} />
+                </Modal>
             </div>
         )
     }
 }
 
-export default productList
+const mapStoreToProps = store => {
+    const { token, api, lastTime: { checkTimeOut } } = store
+    return {
+        token,
+        api,
+        checkTimeOut
+    }
+}
+  
+const mapDispathToProps = dispatch => ({
+    updateTime: time => dispatch(updateTime(time)),
+  })
+
+export default connect(
+    mapStoreToProps,
+    mapDispathToProps
+)(productList)

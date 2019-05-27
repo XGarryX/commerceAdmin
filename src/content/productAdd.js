@@ -6,6 +6,7 @@ import BraftEditor from 'braft-editor'
 import SearchSelect from '../components/SearchSelect'
 import PicturesWall from '../components/PicturesWall'
 import ProduceAttrs from '../components/ProduceAttrs'
+import { updateTime } from '../redux/action/app'
 import '../style/content/productAdd.less'
 import 'braft-editor/dist/index.css'
 
@@ -19,22 +20,48 @@ class productAdd extends Component {
         this.submit = this.submit.bind(this)
     }
     state = {}
+    init() {
+        this.setState({
+            ador: '',
+            attrs: [],
+            buyLink: '',
+            catalogId: '',
+            department: '',
+            departmentId: '',
+            images: [],
+            inner: BraftEditor.createEditorState(null),
+            internalName: '',
+            name: '',
+            price: '',
+            priceStr: '',
+            purchasePrice: '',
+            supplier: '',
+            type: [],
+            childUpInit: true,
+        }, () => this.setState({
+            childUpInit: false
+        }))
+        this.getDepartments()
+        this.getCatalogs()
+    }
     //获取商品属性
     onAttrChange(attrs) {
+        this.props.updateTime(new Date().getTime())
         this.setState({
             attrs
-        }, () => console.log(this.state.attrs))
+        })
     }
     //获取数据
     getDate(path, method) {
-        const { api, token } = this.props
+        const { api, token, checkTimeOut } = this.props
+        checkTimeOut()
         return axios({
             url: api + path,
             method,
             headers: {
                 Authorization: token
             }
-        })  
+        })
     }
     //获取部门
     getDepartments() {
@@ -82,6 +109,9 @@ class productAdd extends Component {
         return resArr
     }
     onImageUpload(images) {
+        const { checkTimeOut, updateTime } = this.props
+        checkTimeOut()
+        updateTime(new Date().getTime())
         this.setState({
             images
         })
@@ -90,16 +120,21 @@ class productAdd extends Component {
         return option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
     }
     handleChange(type, value) {
+        const { checkTimeOut, updateTime } = this.props
+        checkTimeOut()
+        updateTime(new Date().getTime())
         this.setState({
             [type]: value
         })
     }
     uploadFn(param) {
-        const { api, token } = this.props
+        const { api, token, checkTimeOut, updateTime } = this.props
         const serverURL = `${api}/business/product/control/image/upload`
         const fd = new FormData()
-        fd.append('file', param.file)
 
+        checkTimeOut()
+        updateTime(new Date().getTime())
+        fd.append('file', param.file)
         const successFn = ({data: {oneImg}}) => {
             const { id, imgUrl } = oneImg
             param.success({
@@ -133,12 +168,12 @@ class productAdd extends Component {
     }
     submit() {
         const key = [{
-        //     name: 'departmentId', msg: '请选择部门'
-        // // }, {
-        // //     name: 'ador', msg: '请选择广告手'
-        // }, {
-        //     name: 'catalogId', msg: '请选择商品分类'
-        // }, {
+            name: 'departmentId', msg: '请选择部门'
+        }, {
+            name: 'ador', msg: '请选择广告手'
+        }, {
+            name: 'catalogId', msg: '请选择商品分类'
+        }, {
             name: 'name', msg: '请填写商品名称'
         }, {
             name: 'internalName', msg: '请填写内部名称'
@@ -149,23 +184,34 @@ class productAdd extends Component {
         }, {
             name: 'priceStr', msg: '请填写各地区货币价格'
         }, {
-            name: 'merchant', msg: '请选择供应商'
+            name: 'supplier', msg: '请选择供应商'
         }, {
-            name: 'buy_link', msg: '请填写采购链接'
-        // }, {
-        //     name: 'images', msg: '请至少上传一张图集', attr: 'length'
+            name: 'buyLink', msg: '请填写采购链接'
         }]
-        let param = {spec: []}
-        const { attrs } = this.state
+        let param = {more: {
+            details: {}
+        }, spec: []}
+        const { attrs = [], inner, images } = this.state
+        const { token, api } = this.props
         for(let i = 0;i < key.length;i++){
-            const { name, msg, attr } = key[i]
+            const { name, msg } = key[i]
             let value = this.state[name]
-            value = value && attr ? value[attr] : value
             if(!value){
                 message.error(msg)
                 return
             }
             param[name] = value
+        }
+        //商品图片
+        if(images && images.length){
+            param.images = images.map(item => {
+                return {
+                    id: item.uid
+                }
+            })
+        } else {
+            message.error('请至少上传一张图集')
+            return
         }
         //验证商品属性是否完整
         for(let i = 0;i < attrs.length;i++){
@@ -196,14 +242,35 @@ class productAdd extends Component {
                 param.spec.push(spec)
             }
         }
-        console.log(param)
+        param.more.details.text = inner.toHTML().replace(/\"/g, "\\\"")
+        const hide = message.loading('添加中..', 0);
+        axios({
+            url: `${api}/business/product/control/base`,
+            method: 'POST',
+            data: param,
+            headers: {
+                Authorization: token
+            }
+        })
+            .then(({ data: {resultCode, resultMessage}}) => {
+                hide()
+                if(resultCode != "200"){
+                    throw({message: resultMessage})
+                }
+                message.success('添加成功')
+                this.init()
+            })
+            .catch(({message='添加失败'}) => {
+                hide()
+                message.error(message)
+            })
     }
     componentDidMount() {
         this.getDepartments()
         this.getCatalogs()
     }
     render() {
-        const { type, department } = this.state
+        const { type, department, childUpInit, departmentId, ador, catalogId, name, internalName, purchasePrice, price, priceStr, supplier, buyLink, inner } = this.state
         return (
             <div className="add-product">
                 <form>
@@ -216,6 +283,7 @@ class productAdd extends Component {
                                         loading={!department}
                                         className="select"
                                         placeholder="选择部们"
+                                        value={departmentId}
                                         onChange={e => this.handleChange('departmentId', e)}
                                     >
                                         {department && department.map(item => (
@@ -227,13 +295,17 @@ class productAdd extends Component {
                             <tr className="ader">
                                 <th>广告手</th>
                                 <td>
-                                    <SearchSelect
+                                    <Select
                                         loading={this.state.isFetching}
                                         className="select"
                                         placeholder="选择广告手"
                                         dataSource={this.state.ader}
+                                        value={ador}
                                         onChange={e => this.handleChange('ador', e)}
-                                    />
+                                    >
+                                        <Select.Option value="sm">三毛</Select.Option>
+                                        <Select.Option value="wm">五毛</Select.Option>
+                                    </Select>
                                 </td>
                             </tr>
                             <tr className="ader">
@@ -246,6 +318,7 @@ class productAdd extends Component {
                                         className="select"
                                         treeData={type}
                                         treeNodeFilterProp="title"
+                                        value={catalogId}
                                         onChange={e => this.handleChange('catalogId', e)}
                                     />
                                 </td>
@@ -253,13 +326,13 @@ class productAdd extends Component {
                             <tr>
                                 <th>商品名称</th>
                                 <td>
-                                    <Input className="input" placeholder="请输入商品名称" onChange={e => this.handleChange('name', e.target.value)} />
+                                    <Input className="input" placeholder="请输入商品名称" value={name} onChange={e => this.handleChange('name', e.target.value)} />
                                 </td>
                             </tr>
                             <tr>
                                 <th>内部名称</th>
                                 <td>
-                                    <Input className="input" placeholder="请输入内部名称" onChange={e => this.handleChange('internalName', e.target.value)} />
+                                    <Input className="input" placeholder="请输入内部名称" value={internalName} onChange={e => this.handleChange('internalName', e.target.value)} />
                                 </td>
                             </tr>
                             <tr>
@@ -271,19 +344,19 @@ class productAdd extends Component {
                             <tr>
                                 <th>采购价</th>
                                 <td>
-                                    <Input className="input" placeholder="请输入采购价" onChange={e => this.handleChange('purchasePrice', e.target.value)} />
+                                    <Input className="input" placeholder="请输入采购价" value={purchasePrice} onChange={e => this.handleChange('purchasePrice', e.target.value)} />
                                 </td>
                             </tr>
                             <tr>
                                 <th>零售价</th>
                                 <td>
-                                    <Input className="input" placeholder="请输入零售价" onChange={e => this.handleChange('price', e.target.value)} />
+                                    <Input className="input" placeholder="请输入零售价" value={price} onChange={e => this.handleChange('price', e.target.value)} />
                                 </td>
                             </tr>
                             <tr>
                                 <th>各地区货币价格</th>
                                 <td>
-                                    <Input className="input" placeholder="请输入货币价格" onChange={e => this.handleChange('priceStr', e.target.value)} />
+                                    <Input className="input" placeholder="请输入货币价格" value={priceStr} onChange={e => this.handleChange('priceStr', e.target.value)} />
                                 </td>
                             </tr>
                             <tr>
@@ -293,7 +366,8 @@ class productAdd extends Component {
                                         className="select"
                                         placeholder="选择供应商"
                                         dataSource={this.state.supplier}
-                                        onChange={e => this.handleChange('merchant', e)}
+                                        value={supplier}
+                                        onChange={e => this.handleChange('supplier', e)}
                                     >
                                         <Select.Option value="taobao">淘宝</Select.Option>
                                         <Select.Option value="1688">1688</Select.Option>
@@ -303,26 +377,26 @@ class productAdd extends Component {
                             <tr>
                                 <th>产品采购连接</th>
                                 <td>
-                                    <Input className="input" placeholder="请输入产品采购连接" onChange={e => this.handleChange('buy_link', e.target.value)} />
+                                    <Input className="input" placeholder="请输入产品采购连接" value={buyLink} onChange={e => this.handleChange('buyLink', e.target.value)} />
                                 </td>
                             </tr>
                             <tr className="tr-editer">
                                 <th>产品内容</th>
                                 <td>
                                     <div className="editer-block">
-                                        <BraftEditor className="editer" onChange={e => this.handleChange('inner', e.toHTML())} media={{uploadFn: this.uploadFn}} />
+                                        <BraftEditor className="editer" value={inner} onChange={e => this.handleChange('inner', e)} media={{uploadFn: this.uploadFn}} />
                                     </div>
                                 </td>
                             </tr>
                             <tr>
                                 <th>图集相册</th>
                                 <td>
-                                    <PicturesWall onImageUpload={this.onImageUpload}/>
+                                    <PicturesWall onImageUpload={this.onImageUpload} childUpInit={childUpInit} />
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-                    <ProduceAttrs onAttrChange={this.onAttrChange}/>
+                    <ProduceAttrs onAttrChange={this.onAttrChange} childUpInit={childUpInit} />
                     <div className="form-actions">
                         <Button type="primary" onClick={this.submit}>提交</Button>
                     </div>
@@ -333,13 +407,19 @@ class productAdd extends Component {
 }
 
 const mapStoreToProps = store => {
-    const { token, api } = store
+    const { token, api, lastTime: { checkTimeOut } } = store
     return {
         token,
-        api
+        api,
+        checkTimeOut
     }
 }
   
+const mapDispathToProps = dispatch => ({
+    updateTime: time => dispatch(updateTime(time)),
+})
+
 export default connect(
-    mapStoreToProps
+    mapStoreToProps,
+    mapDispathToProps
 )(productAdd)
