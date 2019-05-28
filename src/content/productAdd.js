@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import axios from 'axios'
 import { Input, TreeSelect, Select, Button, message } from 'antd'
+import xss from 'xss'
 import BraftEditor from 'braft-editor'
 import SearchSelect from '../components/SearchSelect'
 import PicturesWall from '../components/PicturesWall'
@@ -242,7 +243,7 @@ class productAdd extends Component {
                 param.spec.push(spec)
             }
         }
-        param.more.details.text = inner.toHTML().replace(/\"/g, "\\\"")
+        param.more.details.text = xss(inner.toHTML().replace(/\"/g, "\\\""))
         const hide = message.loading('添加中..', 0);
         axios({
             url: `${api}/business/product/control/base`,

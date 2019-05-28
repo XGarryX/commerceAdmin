@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { Table, Input, Button, Icon, Modal } from 'antd'
 import { connect } from 'react-redux'
 import axios from 'axios'
+import Images from '../components/Images'
+import { updateTime } from '../redux/action/app'
 import '../style/content/productList.less'
 
 class productList extends Component {
@@ -92,7 +94,7 @@ class productList extends Component {
         this.operating()
         confirm()
         this.setState({
-            searchText: Object.assign(searchText, {
+            searchText: Object.assign(this.state.searchText, {
                 [dataIndex]: selectedKeys[0]
             })
         }, () => console.log(this.state.searchText))
@@ -236,7 +238,7 @@ class productList extends Component {
                     }}
                 />
                 <Modal visible={previewVisible} footer={null} onCancel={() => this.setState({ previewVisible: false })}>
-                    <img alt="example" style={{ width: '100%' }} src={previewImage} />
+                    <Images alt="example" style={{ width: '100%' }} src={previewImage} />
                 </Modal>
             </div>
         )
@@ -254,7 +256,7 @@ const mapStoreToProps = store => {
   
 const mapDispathToProps = dispatch => ({
     updateTime: time => dispatch(updateTime(time)),
-  })
+})
 
 export default connect(
     mapStoreToProps,
