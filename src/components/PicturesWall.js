@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Upload, Icon, Modal, message } from 'antd'
+import { apiPath } from '../config/api'
 
 class PicturesWall extends Component {
     constructor(props) {
@@ -13,7 +14,6 @@ class PicturesWall extends Component {
     state = {
         previewVisible: false,
         previewImage: '',
-        fileList: [],
     }
     handleCancel() {
         this.setState({ previewVisible: false })
@@ -27,7 +27,7 @@ class PicturesWall extends Component {
         } else if (file.status == "done" && response.resultCode == "200") {
             message.success('上传成功')
         }
-        this.beforeUpload(file) && this.setState({ fileList }, () => this.props.onImageUpload(this.state.fileList))
+        this.beforeUpload(file) && this.props.onImageUpload(fileList)
     }
     handlePreview(file) {
         this.setState({
@@ -54,8 +54,8 @@ class PicturesWall extends Component {
         })
     }
     render() {
-        const { previewVisible, previewImage, fileList } = this.state
-        const { token, api } = this.props
+        const { previewVisible, previewImage } = this.state
+        const { token, fileList = [] } = this.props
         const maxImageLength = 4
         const uploadButton = (
             <div>
@@ -67,7 +67,7 @@ class PicturesWall extends Component {
             <div className="clearfix">
                 <Upload
                     listType="picture-card"
-                    action={`${api}/business/product/control/image/upload`}
+                    action={`${apiPath}/business/product/control/image/upload`}
                     headers={{Authorization: this.props.token}}
                     fileList={fileList}
                     multiple
@@ -88,10 +88,9 @@ class PicturesWall extends Component {
 }
 
 const mapStoreToProps = store => {
-    const { token, api } = store
+    const { token } = store
     return {
-        token,
-        api
+        token
     }
 }
 

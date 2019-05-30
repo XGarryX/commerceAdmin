@@ -4,7 +4,6 @@ import {
 } from 'antd'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
-import base64url from "base64url"
 import Tab from '../components/Tab'
 import PageLoadable from '../components/PageLoadable'
 import { addTab, toggleTab } from '../redux/action/tab'
@@ -85,8 +84,8 @@ class Admin extends Component {
           <Layout>
             <Tab className="tab-list"></Tab>
             <Content className="content">{
-              this.props.tabList.map(item => {
-                return <PageLoadable key={item.tabKey} keyValue={item.tabKey} path={item.path} /> 
+              this.props.tabList.map(({ tabKey, path, prop = {} }) => {
+                return <PageLoadable key={tabKey} keyValue={tabKey} path={path} {...prop} /> 
               })
             }</Content>
           </Layout>

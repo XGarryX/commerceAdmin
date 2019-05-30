@@ -13,10 +13,10 @@ export default {
             name: "添加产品",
             path: "productAdd"
         },{
-            tabKey: "product-edit",
-            name: "编辑产品",
-            path: "productEdit"
-        }, {
+        //     tabKey: "product-edit",
+        //     name: "编辑产品",
+        //     path: "productEdit"
+        // }, {
             tabKey: "product-SKU",
             name: "产品SKU",
             path: "SKUList"
@@ -86,23 +86,23 @@ export default {
     //         key: "out-order",
     //         name: "缺货订单"
     //     }]
-    }, {
-        key: "warehouse",
-        name: "库存管理",
-        icon: "inbox",
-        item: [{
-            tabKey: "warehouse-department",
-            name: "库存管理",
-            path: "warehouse"
-        }]
     // }, {
-    //     key: "edit",
-    //     name: "设置",
-    //     icon: "setting",
+    //     key: "warehouse",
+    //     name: "库存管理",
+    //     icon: "inbox",
     //     item: [{
-    //         key: "edit-info",
-    //         name: "个人信息"
+    //         tabKey: "warehouse-department",
+    //         name: "库存管理",
+    //         path: "warehouse"
     //     }]
-    // }
+    // // }, {
+    // //     key: "edit",
+    // //     name: "设置",
+    // //     icon: "setting",
+    // //     item: [{
+    // //         key: "edit-info",
+    // //         name: "个人信息"
+    // //     }]
+    // // }
     }]
 }

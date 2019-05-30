@@ -10,16 +10,11 @@ class ProduceAttrs extends Component {
         this.addAttrList = this.addAttrList.bind(this)
         this.uploadChange = this.uploadChange.bind(this)
     }
-    state = {
-        attrs: []
-    }
     upDateState(state) {
-        this.setState(state, () => {
-            this.props.onAttrChange(this.state.attrs)
-        })
+        this.props.onAttrChange(state)
     }
     uploadChange({ file }, attrObj, date) {
-        const { attrs } = this.state
+        const { attrs } = this.props
         const index = attrs.indexOf(attrObj)
         const targetAttr = attrs[index]
         const attrValuesIndex = targetAttr.attrValues.findIndex(item => item.date == date)
@@ -27,83 +22,67 @@ class ProduceAttrs extends Component {
             targetAttr.attrValues[attrValuesIndex] = Object.assign(targetAttr.attrValues[attrValuesIndex], {
                 imageUid: file.uid
             })
-            this.upDateState({
-                attrs
-            })
+            this.upDateState(attrs)
         } else if (file.status === "removed") {
             targetAttr.attrValues[attrValuesIndex] = Object.assign(targetAttr.attrValues[attrValuesIndex], {
                 imageUid: null
             })
-            this.upDateState({
-                attrs
-            })
+            this.upDateState(attrs)
         }
     }
     //添加属性
     addAttrList() {
-        const { attrs } = this.state
+        const { attrs } = this.props
         const date = new Date().getTime()
         const attr = {
             must: false,
             date,
             attrValues: []
         }
-        this.upDateState({
-            attrs: [...attrs, attr]
-        })
+        this.upDateState([...attrs, attr])
     }
     //删除属性
     deleteAttr(attr) {
-        const { attrs, attrs: { length } } = this.state
+        const { attrs, attrs: { length } } = this.props
         const index = attrs.indexOf(attr)
-        this.upDateState({
-            attrs: [...attrs.slice(0, index), ...attrs.slice(index + 1, length)]
-        })
+        this.upDateState([...attrs.slice(0, index), ...attrs.slice(index + 1, length)])
     }
     //属性修改
     attrChange(value, key, attrObj) {
-        const { attrs, attrs: { length } } = this.state
+        const { attrs, attrs: { length } } = this.props
         const index = attrs.indexOf(attrObj)
-        this.upDateState({
-            attrs: [...attrs.slice(0, index), Object.assign(attrs[index], {
+        this.upDateState([...attrs.slice(0, index), Object.assign(attrs[index], {
                 [key]: value
-            }), ...attrs.slice(index + 1, length)]
-        })
+            }), ...attrs.slice(index + 1, length)])
     }
     //添加属性值
     addAttrValue(attrObj) {
-        const { attrs } = this.state
+        const { attrs } = this.props
         const index = attrs.indexOf(attrObj)
         const targetAttr = attrs[index]
         const date = new Date().getTime()
-        targetAttr.attrValues = [...targetAttr.attrValues, {date, key: date}]
-        this.upDateState({
-            attrs
-        })
+        targetAttr.attrValues = targetAttr.attrValues.concat({date, key: date})
+        this.upDateState(attrs)
     }
     //删除属性值
     deleteAttrValue(attrObj, key) {
-        const { attrs } = this.state
+        const { attrs } = this.props
         const index = attrs.indexOf(attrObj)
         const targetAttr = attrs[index]
         const attrValuesIndex = targetAttr.attrValues.findIndex(item => item.date == key)
         targetAttr.attrValues = [...targetAttr.attrValues.slice(0, attrValuesIndex), ...targetAttr.attrValues.slice(attrValuesIndex + 1, targetAttr.attrValues.length)]
-        this.upDateState({
-            attrs
-        })
+        this.upDateState(attrs)
     }
     //修改属性值
     changeAttrValue(attrObj, date, key, value) {
-        const { attrs } = this.state
+        const { attrs } = this.props
         const index = attrs.indexOf(attrObj)
         const targetAttr = attrs[index]
         const attrValuesIndex = targetAttr.attrValues.findIndex(item => item.date == date)
         targetAttr.attrValues[attrValuesIndex] = Object.assign(targetAttr.attrValues[attrValuesIndex], {
             [key]: value
         })
-        this.upDateState({
-            attrs
-        })
+        this.upDateState(attrs)
     }
     //渲染属性元素
     renderAttr(attr) {
@@ -197,13 +176,8 @@ class ProduceAttrs extends Component {
             </div>
         )
     }
-    componentWillReceiveProps (newProps) {
-        newProps.childUpInit && this.setState({
-            attrs: []
-        })
-    }
     render() {
-        const { attrs } = this.state
+        const { attrs } = this.props
         return (
             <div className="produceAttrs">
                 {

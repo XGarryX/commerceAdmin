@@ -16,7 +16,6 @@ const defaultStore = {
         collapsed: false
     },
     token: null,
-    api: 'http://localhost:8081/api',
     lastTime: {},
 }
 const store = createStore(appReducer, defaultStore)

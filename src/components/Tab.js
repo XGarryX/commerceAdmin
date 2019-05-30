@@ -18,19 +18,19 @@ class Tab extends Component {
         toggleTab(defaultKey)
     }
     render() {
-        const {props} = this
+        const { tabList, tabKey } = this.props
         return (
-            props.tabList.length > 0 ? <Tabs
+            tabList.length > 0 ? <Tabs
                 hideAdd
                 tabBarStyle={{margin: 0}}
-                activeKey={props.tabKey}
+                activeKey={tabKey}
                 onChange={key => this.handleChange(key)}
                 onEdit={key => this.handleEdit(key)}
                 type="editable-card"
                 className="tag-list"
             >
             {
-                props.tabList.map(tab => {
+                tabList.map(tab => {
                     return <TabPane
                         tab={tab.name}
                         key={tab.tabKey}

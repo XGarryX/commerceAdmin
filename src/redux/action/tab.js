@@ -1,11 +1,12 @@
 export const ADDTAB = 'ADD_TAB'
 export const TOGGLETAB = 'TOGGLE_TAB'
 export const REMOVETAB = 'REMOVE_TAB'
+export const SETTABPROPS = 'SET_TAB_PROPS'
 
-export const addTab = tabKey => {
+export const addTab = tab => {
     return {
         type: ADDTAB,
-        tabKey
+        tab,
     }
 }
 
@@ -20,5 +21,13 @@ export const removeTab = tabKey => {
     return {
         type: REMOVETAB,
         tabKey
+    }
+}
+
+export const setTabProps = (tabKey, props) => {
+    return {
+        type: SETTABPROPS,
+        tabKey,
+        props
     }
 }

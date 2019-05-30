@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
-import { Table, Input, Button, Icon, Modal } from 'antd'
+import { Table, Input, Button, Icon, Modal, message } from 'antd'
 import { connect } from 'react-redux'
 import axios from 'axios'
 import Images from '../components/Images'
 import { updateTime } from '../redux/action/app'
+import { apiPath, imagePath } from '../config/api'
+import { addTab, toggleTab, setTabProps } from '../redux/action/tab'
 import '../style/content/productList.less'
 
 class productList extends Component {
@@ -21,9 +23,9 @@ class productList extends Component {
         pageNo: 1,
     }
     getData(url, method, data) {
-        const { api, token } = this.props
+        const { token } = this.props
         return axios({
-            url: api + url,
+            url: apiPath + url,
             method,
             data,
             headers: {
@@ -116,6 +118,28 @@ class productList extends Component {
             pageNo,
             pageSize
         })
+        this.getData('/business/product/list', 'GET', {pageSize, pageNo})
+            .then(({data: {list}}) => {
+                this.setState({
+                    data: list
+                })
+            })
+    }
+    jump2Edit(id) {
+        const tabKey = "product-edit"
+        const { addTab, toggleTab, setTabProps, tabList } = this.props
+        const index = tabList.find(item => item.tabKey == tabKey)
+        if (index) {
+            setTabProps(tabKey, {id})
+        } else {
+            addTab({
+                tabKey,
+                name: '编辑产品',
+                path: 'productEdit',
+                props: {id}
+            })
+        }
+        toggleTab(tabKey)
     }
     //查看图片
     checkPic(url) {
@@ -130,7 +154,7 @@ class productList extends Component {
             isFetching: true
         })
         axios.all([
-            this.getData('/product/infos', 'GET', {pageSize, pageNo}),
+            this.getData('/business/product/list', 'GET', {pageSize, pageNo}),
             this.getData('/product/catalogs', 'GET', {pageSize, pageNo}),
         ])
             .then(res => {
@@ -141,7 +165,7 @@ class productList extends Component {
                 })
                 this.setState(obj, () => console.log(this.state))
             })
-            .catch(err => console.log(err))
+            .catch(err => message.error(err))
             .finally(() => {
                 this.setState({
                     isFetching: false
@@ -151,11 +175,6 @@ class productList extends Component {
     render() {
         const { isFetching, data, catalogs, pageSize, previewVisible, previewImage } = this.state
         const columns = [{
-            title: 'ID',
-            className: 'ID',
-            dataIndex: 'ID',
-            ...this.getColumnSearchProps('ID'),
-        }, {
             title: '分类',
             className: 'catalogId',
             dataIndex: 'catalogId',
@@ -169,9 +188,9 @@ class productList extends Component {
             ...this.getColumnSearchProps('ader'),
         }, {
             title: '产品图片',
-            className: 'picture',
-            dataIndex: 'picture',
-            render: url => <a onClick={url => this.checkPic('http://image.garry.fun/image/product/1544499402808.jpg')}>查看</a>,
+            className: 'images',
+            dataIndex: 'images',
+            render: images => <a onClick={url => this.checkPic(imagePath + images[0].imgUrl)}>查看</a>,
         }, {
             title: '产品名',
             className: 'name',
@@ -191,13 +210,13 @@ class productList extends Component {
             title: '进货价',
             className: 'purchasePrice',
             dataIndex: 'purchasePrice',
-            render: num => <span>{num}</span>,
+            render: num => <span>{num / 100}</span>,
             ...this.getColumnSearchProps('purchasePrice', '高于X eg:60'),
         }, {
             title: '销售价',
             className: 'price',
             dataIndex: 'price',
-            render: num => <span>{num}</span>,
+            render: num => <span>{num / 100}</span>,
         }, {
             title: '各地区货币价格',
             className: 'pricestr',
@@ -216,8 +235,13 @@ class productList extends Component {
         }, {
             title: '操作',
             className: 'operation',
-            dataIndex: 'operation',
-            render: text => <a href='javascript:;'>{text}</a>,
+            dataIndex: 'id',
+            render: id => <a href='javascript:;'><span onClick={() => this.jump2Edit(id)}>编辑</span></a>,
+        }, {
+            title: '',
+            dataIndex: 'id',
+            className: 'preview',
+            render: () => <a>预览</a>,
         }]
         return (
             <div>
@@ -246,16 +270,19 @@ class productList extends Component {
 }
 
 const mapStoreToProps = store => {
-    const { token, api, lastTime: { checkTimeOut } } = store
+    const { token, lastTime: { checkTimeOut }, tab: { tabList } } = store
     return {
         token,
-        api,
-        checkTimeOut
+        checkTimeOut,
+        tabList
     }
 }
   
 const mapDispathToProps = dispatch => ({
     updateTime: time => dispatch(updateTime(time)),
+    addTab: tabKey => dispatch(addTab(tabKey)),
+    toggleTab: tabKey => dispatch(toggleTab(tabKey)),
+    setTabProps: (tabKey, props) => dispatch(setTabProps(tabKey, props)),
 })
 
 export default connect(

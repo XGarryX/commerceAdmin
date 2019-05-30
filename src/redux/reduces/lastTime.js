@@ -12,9 +12,9 @@ export default (state = {}, action) => {
                 checkTimeOut: function () {
                     const token = localStorage.getItem('token')
                     const time = new Date().getTime()
-                    if(!token || JSON.parse(base64url.decode(token.split(".")[1])).exp * 1000 < time && time - state.time > 1000 * 60) {
-                        action.fn('/login')
-                    }
+                    // if(!token || JSON.parse(base64url.decode(token.split(".")[1])).exp * 1000 < time && (!state.time || time - state.time > 1000 * 60)) {
+                    //     action.fn('/login')
+                    // }
                 }
             })
         default:

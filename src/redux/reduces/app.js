@@ -8,7 +8,6 @@ export default (state = {}, action) => {
         tab: tabReduce(state.tab, action),
         sider: siderState(state.sider, action),
         token: token(state.token, action),
-        api: state.api,
         lastTime: lastTime(state.lastTime, action)
     }
 }

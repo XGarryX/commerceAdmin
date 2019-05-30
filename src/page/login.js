@@ -6,6 +6,7 @@ import JsEncrypt  from 'jsencrypt'
 import base64url from "base64url"
 import axios from 'axios'
 import { changeToken } from '../redux/action/token'
+import { apiPath } from '../config/api'
 import '../style/page/login.less'
 
 class Login extends Component {
@@ -18,6 +19,7 @@ class Login extends Component {
         this.codeError = this.codeError.bind(this)
         this.changeCode = this.changeCode.bind(this)
         this.handleSubmit = this.handleSubmit.bind(this)
+        this.handleKaptchaChange = this.handleKaptchaChange.bind(this)
 
         let setState = this.setState
         this.setState = function () {
@@ -28,6 +30,7 @@ class Login extends Component {
     state = {
         hasCodeLoad: false,
         isLoggingIn: false,
+        kaptcha: ''
     }
     loginFail(msg) {
         this.setState({
@@ -39,10 +42,9 @@ class Login extends Component {
         this.props.form.validateFields((err, values) => {
             if (!err) {
                 const { publicKey } = this.state
-                const { api } = this.props
                 const jse = new JsEncrypt ()
                 jse.setPublicKey(publicKey)
-                axios.post(`${api}/cuser/basic/login`, {
+                axios.post(`${apiPath}/cuser/basic/login`, {
                     phone: jse.encrypt(values.phone),
                     password: jse.encrypt(values.password),
                     verityCode: values.verityCode,
@@ -58,10 +60,10 @@ class Login extends Component {
                     .catch(e => {
                         this.loginFail(e.message)
                     })
+                    // .finally(() => this.changeCode())
                     this.setState({
                     isLoggingIn: true
                 })
-                this.changeCode()
             }
         })
     }
@@ -70,21 +72,25 @@ class Login extends Component {
     }
     codeError() {
         this.setState({hasCodeLoad: true})
-
     }
     changeCode() {
         this.setState({
-            codeUrl: `${this.props.api}/common/kaptcha?${Math.random()}`,
+            codeUrl: `${apiPath}/common/kaptcha?${Math.random()}`,
             hasCodeLoad: false
+        })
+    }
+    handleKaptchaChange(e) {
+        this.setState({
+            kaptcha: e.target.value
         })
     }
     componentDidMount() {
         const token = localStorage.getItem('token')
+        this.changeCode()
         if(token && JSON.parse(base64url.decode(token.split(".")[1])).exp * 1000 > new Date().getTime()) {
             this.props.history.push('/admin')
         }
-        this.changeCode()
-        axios.get(`${this.props.api}/common/publicKey`, {}, {
+        axios.get(`${apiPath}/common/publicKey`, {}, {
             timeout: 1000 * 30
         })
             .then(({data: { publicKey }}) => {
@@ -94,6 +100,9 @@ class Login extends Component {
             })
             .catch(e => {
                 message.info(e.message)
+                this.setState({
+                    kaptcha: ''
+                })
             })
     }
     componentWillUnmount() {
@@ -103,7 +112,7 @@ class Login extends Component {
     }
     render() {
         const { getFieldDecorator } = this.props.form
-        const { codeUrl, hasCodeLoad, isLoggingIn } = this.state
+        const { codeUrl, hasCodeLoad, isLoggingIn, kaptcha } = this.state
         return (
             <div className="login">
                 <div className="background"></div>
@@ -135,7 +144,7 @@ class Login extends Component {
                                 rules: [{ required: true, message: '请输入验证码!' }],
                             })(
                                 <p>
-                                    <Input placeholder="验证码" className="login-form-code" allowClear />
+                                    <Input placeholder="验证码" className="login-form-code" allowClear value={kaptcha} onChange={this.handleKaptchaChange} />
                                     <img
                                         src={codeUrl}
                                         className="login-form-kaptcha"
@@ -160,12 +169,7 @@ class Login extends Component {
     }
 }
 
-const mapStoreToProps = store => {
-    const { api } = store
-    return {
-        api: store.api
-    }
-}
+const mapStoreToProps = store => ({})
   
 const mapDispathToProps = dispatch => ({
     changeToken: token => dispatch(changeToken(token)),
