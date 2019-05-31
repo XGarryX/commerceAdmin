@@ -24,6 +24,12 @@ class Images extends Component {
         })
         onError && onError()
     }
+    componentWillReceiveProps() {
+        this.setState({
+            loadding: true,
+            hasError: false
+        })
+    }
     render() {
         const { loadding, hasError } = this.state
         const { src, alt } = this.props

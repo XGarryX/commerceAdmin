@@ -16,6 +16,7 @@ class productAdd extends Component {
 
         this.handleChange = this.handleChange.bind(this)
         this.onAttrChange = this.onAttrChange.bind(this)
+        this.submit = this.submit.bind(this)
     }
     init() {
         this.setState({
@@ -48,7 +49,7 @@ class productAdd extends Component {
             url: apiPath + path,
             method,
             headers: {
-                Authorization: token
+                accessToken: token
             }
         })
     }
@@ -90,6 +91,15 @@ class productAdd extends Component {
         })
         this.setState({
             type: this.setCatalogs2Step(tabel)
+        })
+    }
+    //获取广告手
+    getUser(id) {
+        this.getDate(`/common/department/console/user?departmentId=${id}`, 'GET')
+        .then(({data: {list}}) => {
+            this.setState({
+                aderList: list
+            })
         })
     }
     //aaaaaaa以后一定优化这里
@@ -150,11 +160,9 @@ class productAdd extends Component {
         }
         //商品图片
         if(images && images.length){
-            param.images = images.map(item => {
-                return {
-                    id: item.uid
-                }
-            })
+            param.more.bannerImgs = images.reduce((images, { response: { fileName, prefix } }) => {
+                return (images && (images + '\,')) + prefix + fileName.replace(/\./g, '\\.')
+            }, '')
         } else {
             message.error('请至少上传一张图集')
             return
@@ -197,7 +205,7 @@ class productAdd extends Component {
             method: 'POST',
             data: param,
             headers: {
-                Authorization: token
+                accessToken: token
             }
         })
             .then(({ data: {resultCode, resultMessage}}) => {
@@ -213,20 +221,25 @@ class productAdd extends Component {
                 message.error(message)
             })
     }
+    componentWillUpdate(nextProps, { departmentId }) {
+        if(departmentId && departmentId != this.state.departmentId){
+            this.getUser(departmentId)
+        }
+    }
     componentDidMount() {
         this.getDepartments()
         this.getCatalogs()
     }
     render() {
         return (
-            <div className="add-product">
+            <div className="product">
                 <ProduceEditer
                     {...this.state}
                     handleChange={this.handleChange}
                     onAttrChange={this.onAttrChange}
                 />
                 <div className="form-actions" style={{padding: '10px', textAlign: 'right'}}>
-                    <Button type="primary">提交</Button>
+                    <Button type="primary" onClick={this.submit} >提交</Button>
                 </div>
             </div>
         )

@@ -58,31 +58,34 @@ class ProduceAttrs extends Component {
     //添加属性值
     addAttrValue(attrObj) {
         const { attrs } = this.props
-        const index = attrs.indexOf(attrObj)
-        const targetAttr = attrs[index]
+        const newAttrs = [].concat(attrs)
+        const index = newAttrs.indexOf(attrObj)
+        const targetAttr = newAttrs[index]
         const date = new Date().getTime()
-        targetAttr.attrValues = targetAttr.attrValues.concat({date, key: date})
-        this.upDateState(attrs)
+        targetAttr.attrValues = [...targetAttr.attrValues, {date, key: date}]
+        this.upDateState(newAttrs)
     }
     //删除属性值
     deleteAttrValue(attrObj, key) {
         const { attrs } = this.props
-        const index = attrs.indexOf(attrObj)
-        const targetAttr = attrs[index]
+        const newAttrs = [].concat(attrs)
+        const index = newAttrs.indexOf(attrObj)
+        const targetAttr = newAttrs[index]
         const attrValuesIndex = targetAttr.attrValues.findIndex(item => item.date == key)
         targetAttr.attrValues = [...targetAttr.attrValues.slice(0, attrValuesIndex), ...targetAttr.attrValues.slice(attrValuesIndex + 1, targetAttr.attrValues.length)]
-        this.upDateState(attrs)
+        this.upDateState(newAttrs)
     }
     //修改属性值
     changeAttrValue(attrObj, date, key, value) {
         const { attrs } = this.props
-        const index = attrs.indexOf(attrObj)
-        const targetAttr = attrs[index]
+        const newAttrs = [].concat(attrs)
+        const index = newAttrs.indexOf(attrObj)
+        const targetAttr = newAttrs[index]
         const attrValuesIndex = targetAttr.attrValues.findIndex(item => item.date == date)
-        targetAttr.attrValues[attrValuesIndex] = Object.assign(targetAttr.attrValues[attrValuesIndex], {
+        targetAttr.attrValues[attrValuesIndex] = Object.assign({}, targetAttr.attrValues[attrValuesIndex], {
             [key]: value
         })
-        this.upDateState(attrs)
+        this.upDateState(newAttrs)
     }
     //渲染属性元素
     renderAttr(attr) {
@@ -93,8 +96,8 @@ class ProduceAttrs extends Component {
         }, {
             title: '属性标题',
             className: 'title',
-            dataIndex: 'title',
-            render: (value, {date}) => <Input placeholder="属性值标题" onChange={e => this.changeAttrValue(attr, date, 'name', e.target.value)} />,
+            dataIndex: 'name',
+            render: (value, {date}) => <Input placeholder="属性值标题" value={value} onChange={e => this.changeAttrValue(attr, date, 'name', e.target.value)} />,
         // }, {
         //     title: '标识',
         //     className: 'id',
@@ -109,14 +112,14 @@ class ProduceAttrs extends Component {
             title: '排序',
             className: 'sort',
             dataIndex: 'sort',
-            render: (value, {date}) => <Input placeholder="排序" onChange={e => this.changeAttrValue(attr, date, 'sort', e.target.value)}/>,
+            render: (value, {date}) => <Input placeholder="排序" value={value} onChange={e => this.changeAttrValue(attr, date, 'sort', e.target.value)}/>,
         }, {
             title: '图片',
             className: 'picture',
             dataIndex: 'imageUid',
             render: (value, {date}) => (
                 <Upload
-                    action={`${this.props.api}/business/product/control/image/upload`}
+                    action={`${this.props.api}/file/qiniu/upload`}
                     disabled={value ? true : false}
                     headers={{Authorization: this.props.token}}
                     onChange={e => this.uploadChange(e, attr, date)}
@@ -150,10 +153,10 @@ class ProduceAttrs extends Component {
                     <div className="attr-body">
                         <div className="attr-tr">
                             <div className="attr-td">
-                                <Input placeholder="属性分类名称" size="small" onChange={e => this.attrChange(e.target.value, "attrName", attr)}/>
+                                <Input placeholder="属性分类名称" size="small" value={attr.attrName} onChange={e => this.attrChange(e.target.value, "attrName", attr)}/>
                             </div>
                             <div className="attr-td">
-                                <Input size="small" onChange={e => this.attrChange(e.target.value, "srot", attr)} />
+                                <Input size="small" value={attr.srot} onChange={e => this.attrChange(e.target.value, "srot", attr)} />
                             </div>
                             {/* <div className="attr-td">
                                 <Select size="small" defaultValue="false" onChange={e => this.attrChange(e, "must", attr)} >

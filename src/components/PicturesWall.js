@@ -27,11 +27,11 @@ class PicturesWall extends Component {
         } else if (file.status == "done" && response.resultCode == "200") {
             message.success('上传成功')
         }
-        this.beforeUpload(file) && this.props.onImageUpload(fileList)
+        this.beforeUpload(file) && this.props.onImageUpload([...fileList])
     }
     handlePreview(file) {
         this.setState({
-            previewImage: file.url || file.thumbUrl,
+            previewImage: file.thumbUrl,
             previewVisible: true,
         });
     }
@@ -46,16 +46,9 @@ class PicturesWall extends Component {
         }
         return isJPG && isLt2M
     }
-    componentWillReceiveProps (newProps) {
-        newProps.childUpInit && this.setState({
-            previewVisible: false,
-            previewImage: '',
-            fileList: [],
-        })
-    }
     render() {
         const { previewVisible, previewImage } = this.state
-        const { token, fileList = [] } = this.props
+        const { token, images } = this.props
         const maxImageLength = 4
         const uploadButton = (
             <div>
@@ -67,17 +60,17 @@ class PicturesWall extends Component {
             <div className="clearfix">
                 <Upload
                     listType="picture-card"
-                    action={`${apiPath}/business/product/control/image/upload`}
+                    action={`${apiPath}/file/qiniu/upload`}
                     headers={{Authorization: this.props.token}}
-                    fileList={fileList}
+                    fileList={images}
                     multiple
                     onPreview={this.handlePreview}
                     onChange={this.handleChange}
                     headers={{
-                        Authorization: token
+                        accessToken: token
                     }}
                 >
-                    {fileList.length >= maxImageLength ? null : uploadButton}
+                    {images.length >= maxImageLength ? null : uploadButton}
                 </Upload>
                 <Modal visible={previewVisible} footer={null} onCancel={this.handleCancel}>
                     <img alt="example" style={{ width: '100%' }} src={previewImage} />

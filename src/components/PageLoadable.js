@@ -16,7 +16,7 @@ class LazyPage extends Component {
     }
     render() {
         const Page = this.state.page,
-            {props: {tabKey, keyValue}} = this
+            {tabKey, keyValue, prop} = this.props
         return (
             <Suspense
                 fallback={
@@ -30,7 +30,7 @@ class LazyPage extends Component {
                 }
             >
                 <div style={{display: (tabKey === keyValue ? 'block' : 'none')}}>
-                    <Page />
+                    <Page {...prop}/>
                 </div>
             </Suspense>
         )

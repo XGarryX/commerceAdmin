@@ -4,9 +4,11 @@ import {
 } from 'antd'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
+import base64url from 'base64url'
 import Tab from '../components/Tab'
 import PageLoadable from '../components/PageLoadable'
 import { addTab, toggleTab } from '../redux/action/tab'
+import { changeToken } from '../redux/action/token'
 import { updateTime, setTimeFn } from '../redux/action/app'
 import { taggleSider } from '../redux/action/sider'
 import siderData from '../config/sider.js'
@@ -34,15 +36,17 @@ class Admin extends Component {
     this.props.taggleSider(collapsed);
   }
   componentWillMount() {
-    // const token = localStorage.getItem('token')
-    // if(token) {
-    //   if(JSON.parse(base64url.decode(token.split(".")[1])).exp * 1000 < new Date().getTime()) {
-    //     this.props.history.push('/login')
-    //   }
-    // } else {
-    //   this.props.history.push('/login')
-    // }
-    this.props.setTimeFn(this.props.history.push)
+    const { changeToken, history, setTimeFn } = this.props
+    const token = localStorage.getItem('token')
+    if(token) {
+      if(JSON.parse(base64url.decode(token.split(".")[1])).exp * 1000 < new Date().getTime()) {
+        history.push('/login')
+      }
+    } else {
+      history.push('/login')
+    }
+    changeToken(token)
+    setTimeFn(history.push)
   }
   render() {
     return (
@@ -84,8 +88,8 @@ class Admin extends Component {
           <Layout>
             <Tab className="tab-list"></Tab>
             <Content className="content">{
-              this.props.tabList.map(({ tabKey, path, prop = {} }) => {
-                return <PageLoadable key={tabKey} keyValue={tabKey} path={path} {...prop} /> 
+              this.props.tabList.map(({ tabKey, path, props = {} }) => {
+                return <PageLoadable key={tabKey} keyValue={tabKey} path={path} prop={props} /> 
               })
             }</Content>
           </Layout>
@@ -106,6 +110,7 @@ const mapStoreToProps = store => {
 }
 
 const mapDispathToProps = dispatch => ({
+  changeToken: token => dispatch(changeToken(token)),
   addTab: tabKey => dispatch(addTab(tabKey)),
   toggleTab: tabKey => dispatch(toggleTab(tabKey)),
   taggleSider: state => dispatch(taggleSider(state)),

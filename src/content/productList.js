@@ -17,19 +17,18 @@ class productList extends Component {
     state = {
         previewVisible: false,
         previewImage: '',
-        isFetching: true,
         searchText: {},
         pageSize: 10,
         pageNo: 1,
     }
-    getData(url, method, data) {
+    getData(url, params) {
         const { token } = this.props
         return axios({
             url: apiPath + url,
-            method,
-            data,
+            method: 'GET',
+            params,
             headers: {
-                Authorization: token
+                accessToken: token
             }
         })
     }
@@ -38,25 +37,6 @@ class productList extends Component {
         const { checkTimeOut, updateTime } = this.props
         checkTimeOut()
         updateTime(new Date().getTime())
-    }
-    searchProduct() {
-        this.setState({
-            isFetching: true
-        })
-        /*axios.post('/serch', {
-                ...this.state.searchText
-            })
-            .then(response => {
-
-            })
-            .catch(err => {
-
-            })*/
-        setTimeout(() => {
-            this.setState({
-                isFetching: false
-            })
-        }, 1000)
     }
     getColumnSearchProps = (dataIndex, placeholder) => ({
         filterDropdown: ({
@@ -99,8 +79,7 @@ class productList extends Component {
             searchText: Object.assign(this.state.searchText, {
                 [dataIndex]: selectedKeys[0]
             })
-        }, () => console.log(this.state.searchText))
-        this.searchProduct()
+        }, () => this.getListInfo())
     }
     handleReset = (clearFilters, dataIndex) => {
         this.operating()
@@ -108,22 +87,24 @@ class productList extends Component {
             searchText: Object.assign(this.state.searchText, {
                 [dataIndex]: ''
             })
-        }, () => console.log(this.state.searchText))
-        this.searchProduct()
+        }, () => this.getListInfo())
         clearFilters();
     }
     handlePageChange(pageNo, pageSize) {
-        this.operating()
-        this.setState({
-            pageNo,
-            pageSize
-        })
-        this.getData('/business/product/list', 'GET', {pageSize, pageNo})
-            .then(({data: {list}}) => {
-                this.setState({
-                    data: list
-                })
+        if(pageSize){
+            this.operating()
+            this.setState({
+                pageNo,
+                pageSize
             })
+            this.getData('/business/product/list', {pageSize, pageNo})
+                .then(({data: {list}}) => {
+                    this.setState({
+                        data: list
+                    })
+                })
+        }
+            
     }
     jump2Edit(id) {
         const tabKey = "product-edit"
@@ -148,32 +129,34 @@ class productList extends Component {
             previewVisible: true
         })
     }
-    componentDidMount() {
-        const { pageSize, pageNo } = this.state
+    getListInfo() {
+        const { pageSize, pageNo, searchText } = this.state
+        console.log(searchText)
         this.setState({
-            isFetching: true
+            data: []
         })
         axios.all([
-            this.getData('/business/product/list', 'GET', {pageSize, pageNo}),
-            this.getData('/product/catalogs', 'GET', {pageSize, pageNo}),
+            this.getData('/business/product/list', {...searchText, pageSize, pageNo}),
+            this.getData('/product/catalogs'),
         ])
             .then(res => {
                 let keys = ['data', 'catalogs']
                 let obj = {}
-                res.forEach(({data: {list}}, index) => {
+                res.forEach(({data: {list, resultCode, resultMessage}}, index) => {
+                    if(resultCode != "200"){
+                        throw({message: resultMessage})
+                    }
                     obj[keys[index]] = list
                 })
-                this.setState(obj, () => console.log(this.state))
+                this.setState(obj)
             })
             .catch(err => message.error(err))
-            .finally(() => {
-                this.setState({
-                    isFetching: false
-                })
-            })
+    }
+    componentDidMount() {
+        this.getListInfo()
     }
     render() {
-        const { isFetching, data, catalogs, pageSize, previewVisible, previewImage } = this.state
+        const { data, catalogs, pageSize, previewVisible, previewImage } = this.state
         const columns = [{
             title: '分类',
             className: 'catalogId',
@@ -189,8 +172,10 @@ class productList extends Component {
         }, {
             title: '产品图片',
             className: 'images',
-            dataIndex: 'images',
-            render: images => <a onClick={url => this.checkPic(imagePath + images[0].imgUrl)}>查看</a>,
+            dataIndex: 'more',
+            render: (more) => {
+                return <a onClick={() => this.checkPic(imagePath + (more ? more.bannerImgs.split(',')[0].replace("\\.", ".") : ''))}>查看</a>
+            },
         }, {
             title: '产品名',
             className: 'name',
@@ -235,19 +220,19 @@ class productList extends Component {
         }, {
             title: '操作',
             className: 'operation',
-            dataIndex: 'id',
-            render: id => <a href='javascript:;'><span onClick={() => this.jump2Edit(id)}>编辑</span></a>,
+            dataIndex: '',
+            render: ({id}) => <a href='javascript:;'><span onClick={() => this.jump2Edit(id)}>编辑</span></a>,
         }, {
             title: '',
             dataIndex: 'id',
             className: 'preview',
-            render: () => <a>预览</a>,
+            render: id => <a href='javascript:;'><span onClick={() => window.open(`http://localhost:3001/${id}`)}>预览</span></a>,
         }]
         return (
             <div>
                 <Table
                     size="middle"
-                    loading={isFetching}
+                    loading={!data}
                     bordered={true}
                     className="productList"
                     columns={columns}

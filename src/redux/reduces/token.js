@@ -3,7 +3,7 @@ import { CHANGETOKEN } from '../action/token'
 export default (state, action) => {
     switch(action.type) {
         case CHANGETOKEN:
-            return action.value
+            return action.token
         default:
             return state
     }

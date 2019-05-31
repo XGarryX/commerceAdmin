@@ -4,7 +4,7 @@ import { Input, TreeSelect, Select, InputNumber } from 'antd'
 import axios from 'axios'
 import BraftEditor from 'braft-editor'
 import { updateTime } from '../redux/action/app'
-import { apiPath } from '../config/api'
+import { apiPath, imagePath } from '../config/api'
 import PicturesWall from '../components/PicturesWall'
 import ProduceAttrs from '../components/ProduceAttrs'
 import '../style/components/ProduceEditer.less'
@@ -15,25 +15,22 @@ class ProduceEditer extends Component {
         super(props)
 
         this.onImageUpload = this.onImageUpload.bind(this)
+        this.uploadFn = this.uploadFn.bind(this)
     }
     filterOption(input, option) {
         return option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
     }
     uploadFn(param) {
         const { token, checkTimeOut, updateTime } = this.props
-        const serverURL = `${apiPath}/business/product/control/image/upload`
+        const serverURL = `${apiPath}/file/qiniu/upload`
         const fd = new FormData()
 
         checkTimeOut()
         updateTime(new Date().getTime())
         fd.append('file', param.file)
-        const successFn = ({data: {oneImg}}) => {
-            const { id, imgUrl } = oneImg
+        const successFn = ({ data: { fileName, prefix }}) => {
             param.success({
-                url: imgUrl,
-                meta: {
-                    id,
-                }
+                url: imagePath + prefix + fileName,
             })
         }
     
@@ -48,7 +45,7 @@ class ProduceEditer extends Component {
             method: 'POST',
             data: fd,
             headers: {
-                Authorization: token,
+                accessToken: token,
                 'Content-Type':'multipart/form-data'
             },
             onUploadProgress: function (event) {
@@ -58,14 +55,14 @@ class ProduceEditer extends Component {
             .then(res => successFn(res))
             .catch(err => errorFn(err))
     }
-    onImageUpload(fileList) {
+    onImageUpload(images) {
         const { checkTimeOut, updateTime, handleChange } = this.props
         checkTimeOut()
         updateTime(new Date().getTime())
-        handleChange('fileList', fileList)
+        handleChange('images', images)
     }
     render() {
-        const { isFetching, department, departmentId, ader, ador, type, catalogId, name, internalName, purchasePrice, price, priceStr, supplier, buyLink, inner, fileList, attrs =[] } = this.props
+        const { isFetching, department, departmentId, aderList, ader, ador, type, catalogId, name, internalName, purchasePrice, price, priceStr, supplier, buyLink, inner, images = [], attrs =[] } = this.props
         const { handleChange, onAttrChange } = this.props
         return (
             <div className="add-product">
@@ -95,7 +92,6 @@ class ProduceEditer extends Component {
                                         loading={isFetching}
                                         className="select"
                                         placeholder="选择广告手"
-                                        dataSource={ader}
                                         value={ador}
                                         onChange={e => handleChange('ador', e)}
                                     >
@@ -187,7 +183,7 @@ class ProduceEditer extends Component {
                             <tr>
                                 <th>图集相册</th>
                                 <td>
-                                    <PicturesWall onImageUpload={this.onImageUpload} fileList={fileList} />
+                                    <PicturesWall onImageUpload={this.onImageUpload} images={images} />
                                 </td>
                             </tr>
                         </tbody>

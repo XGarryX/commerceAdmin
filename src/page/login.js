@@ -30,7 +30,7 @@ class Login extends Component {
     state = {
         hasCodeLoad: false,
         isLoggingIn: false,
-        kaptcha: ''
+        verifyCode: ''
     }
     loginFail(msg) {
         this.setState({
@@ -47,7 +47,7 @@ class Login extends Component {
                 axios.post(`${apiPath}/cuser/basic/login`, {
                     phone: jse.encrypt(values.phone),
                     password: jse.encrypt(values.password),
-                    verityCode: values.verityCode,
+                    verifyCode: values.verifyCode,
                 })
                     .then(({data}) => {
                         if (data.resultCode == 200) {
@@ -60,8 +60,8 @@ class Login extends Component {
                     .catch(e => {
                         this.loginFail(e.message)
                     })
-                    // .finally(() => this.changeCode())
-                    this.setState({
+                    .finally(() => this.changeCode())
+                this.setState({
                     isLoggingIn: true
                 })
             }
@@ -76,12 +76,13 @@ class Login extends Component {
     changeCode() {
         this.setState({
             codeUrl: `${apiPath}/common/kaptcha?${Math.random()}`,
-            hasCodeLoad: false
+            hasCodeLoad: false,
+            verifyCode: ''
         })
     }
     handleKaptchaChange(e) {
         this.setState({
-            kaptcha: e.target.value
+            verifyCode: e.target.value
         })
     }
     componentDidMount() {
@@ -101,7 +102,7 @@ class Login extends Component {
             .catch(e => {
                 message.info(e.message)
                 this.setState({
-                    kaptcha: ''
+                    verifyCode: ''
                 })
             })
     }
@@ -112,7 +113,7 @@ class Login extends Component {
     }
     render() {
         const { getFieldDecorator } = this.props.form
-        const { codeUrl, hasCodeLoad, isLoggingIn, kaptcha } = this.state
+        const { codeUrl, hasCodeLoad, isLoggingIn, verifyCode } = this.state
         return (
             <div className="login">
                 <div className="background"></div>
@@ -140,11 +141,11 @@ class Login extends Component {
                             )}
                         </Form.Item>
                         <Form.Item>
-                            {getFieldDecorator('verityCode', {
+                            {getFieldDecorator('verifyCode', {
                                 rules: [{ required: true, message: '请输入验证码!' }],
                             })(
                                 <p>
-                                    <Input placeholder="验证码" className="login-form-code" allowClear value={kaptcha} onChange={this.handleKaptchaChange} />
+                                    <Input placeholder="验证码" className="login-form-code" allowClear value={verifyCode} onChange={this.handleKaptchaChange} />
                                     <img
                                         src={codeUrl}
                                         className="login-form-kaptcha"
