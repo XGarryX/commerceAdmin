@@ -130,11 +130,11 @@ class productList extends Component {
         })
     }
     getListInfo() {
-        const { pageSize, pageNo, searchText } = this.state
-        console.log(searchText)
+        let { pageSize, pageNo, searchText, searchText: { purchasePrice } } = this.state
         this.setState({
             data: []
         })
+        purchasePrice ? searchText.purchasePrice = purchasePrice * 100 : ''
         axios.all([
             this.getData('/business/product/list', {...searchText, pageSize, pageNo}),
             this.getData('/product/catalogs'),
@@ -150,7 +150,7 @@ class productList extends Component {
                 })
                 this.setState(obj)
             })
-            .catch(err => message.error(err))
+            .catch(({message}) => message.error(message))
     }
     componentDidMount() {
         this.getListInfo()
@@ -215,7 +215,7 @@ class productList extends Component {
             title: '状态',
             className: 'state',
             dataIndex: 'state',
-            render: state => <span>{state ? '上架' : '下架'}</span>,
+            render: state => <span>{!state ? '在售' : '下架'}</span>,
             ...this.getColumnSearchProps('state'),
         }, {
             title: '操作',
