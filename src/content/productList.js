@@ -140,6 +140,7 @@ class productList extends Component {
         this.setState({
             data: []
         })
+        purchasePrice ? searchText.purchasePrice = purchasePrice * 100 : ''
         axios.all([
             this.getData('/business/product/list', {...searchText, pageSize, pageNo}),
             this.getData('/product/catalogs'),
