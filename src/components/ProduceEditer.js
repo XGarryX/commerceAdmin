@@ -92,6 +92,7 @@ class ProduceEditer extends Component {
                                         loading={isFetching}
                                         className="select"
                                         placeholder="选择广告手"
+                                        defaultValue={ader}
                                         value={ader}
                                         onChange={e => handleChange('ader', e)}
                                     >

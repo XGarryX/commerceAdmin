@@ -17,6 +17,7 @@ class productEdit extends Component {
         this.onAttrChange = this.onAttrChange.bind(this)
         this.submit = this.submit.bind(this)
     }
+    state = {}
     init() {
         const { id } = this.props
         if (id) {
@@ -142,7 +143,7 @@ class productEdit extends Component {
         const key = [{
             name: 'departmentId', msg: '请选择部门'
         }, {
-            name: 'ador', msg: '请选择广告手'
+            name: 'ader', msg: '请选择广告手'
         }, {
             name: 'catalogId', msg: '请选择商品分类'
         }, {
@@ -247,10 +248,12 @@ class productEdit extends Component {
         }
         return true
     }
-    componentWillUpdate(nextProps, { departmentId }) {
+    componentWillUpdate(nextProps, newProps = {}) {
+        const { departmentId } = newProps
+        const { department } = this.state
         if(departmentId && departmentId != this.state.departmentId){
-            this.setState({
-                ador: ''
+            department && this.setState({
+                ader: ''
             })
             this.getUser(departmentId)
         }

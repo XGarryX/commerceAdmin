@@ -18,6 +18,7 @@ class productAdd extends Component {
         this.onAttrChange = this.onAttrChange.bind(this)
         this.submit = this.submit.bind(this)
     }
+    state = {}
     init() {
         this.setState({
             ader: '',
