@@ -62,7 +62,7 @@ class ProduceEditer extends Component {
         handleChange('images', images)
     }
     render() {
-        const { isFetching, department, departmentId, aderList, ader, ador, type, catalogId, name, internalName, purchasePrice, price, priceStr, supplier, buyLink, inner, images = [], attrs =[] } = this.props
+        const { isFetching, department, departmentId, aderList = [], ader, type, catalogId, name, internalName, purchasePrice, price, priceStr, supplier, buyLink, inner, images = [], attrs =[] } = this.props
         const { handleChange, onAttrChange } = this.props
         return (
             <div className="add-product">
@@ -92,11 +92,14 @@ class ProduceEditer extends Component {
                                         loading={isFetching}
                                         className="select"
                                         placeholder="选择广告手"
-                                        value={ador}
-                                        onChange={e => handleChange('ador', e)}
+                                        value={ader}
+                                        onChange={e => handleChange('ader', e)}
                                     >
-                                        <Select.Option value="sm">三毛</Select.Option>
-                                        <Select.Option value="wm">五毛</Select.Option>
+                                    {
+                                        aderList.map(({id, userName}) => (
+                                            <Select.Option value={id} key={id} >{userName}</Select.Option>
+                                        ))
+                                    }
                                     </Select>
                                 </td>
                             </tr>

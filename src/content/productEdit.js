@@ -216,7 +216,7 @@ class productEdit extends Component {
                 param.spec.push(spec)
             }
         }
-        param.more.details.text = xss(inner.toHTML().replace(/\"/g, "\\\""))
+        param.more.details.text = xss(inner.toHTML())
         param.purchasePrice = param.purchasePrice * 100
         param.price = param.price * 100
         const hide = message.loading('添加中..', 0);
@@ -249,6 +249,9 @@ class productEdit extends Component {
     }
     componentWillUpdate(nextProps, { departmentId }) {
         if(departmentId && departmentId != this.state.departmentId){
+            this.setState({
+                ador: ''
+            })
             this.getUser(departmentId)
         }
     }

@@ -20,7 +20,7 @@ class productAdd extends Component {
     }
     init() {
         this.setState({
-            ador: '',
+            ader: '',
             attrs: [],
             buyLink: '',
             catalogId: '',
@@ -126,7 +126,7 @@ class productAdd extends Component {
         const key = [{
             name: 'departmentId', msg: '请选择部门'
         }, {
-            name: 'ador', msg: '请选择广告手'
+            name: 'ader', msg: '请选择广告手'
         }, {
             name: 'catalogId', msg: '请选择商品分类'
         }, {
@@ -196,10 +196,10 @@ class productAdd extends Component {
                 param.spec.push(spec)
             }
         }
-        param.more.details.text = xss(inner.toHTML().replace(/\"/g, "\\\""))
+        param.more.details.text = xss(inner.toHTML())
         param.purchasePrice = param.purchasePrice * 100
         param.price = param.price * 100
-        const hide = message.loading('添加中..', 0);
+        const hide = message.loading('添加中..', 0)
         axios({
             url: `${apiPath}/business/product/control/base`,
             method: 'POST',
@@ -223,6 +223,9 @@ class productAdd extends Component {
     }
     componentWillUpdate(nextProps, { departmentId }) {
         if(departmentId && departmentId != this.state.departmentId){
+            this.setState({
+                ader: ''
+            })
             this.getUser(departmentId)
         }
     }

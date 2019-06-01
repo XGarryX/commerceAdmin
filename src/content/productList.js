@@ -92,16 +92,21 @@ class productList extends Component {
     }
     handlePageChange(pageNo, pageSize) {
         if(pageSize){
+            const hide = message.loading('加载中..')
             this.operating()
             this.setState({
                 pageNo,
-                pageSize
+                pageSize,
             })
             this.getData('/business/product/list', {pageSize, pageNo})
                 .then(({data: {list}}) => {
+                    hide()
                     this.setState({
                         data: list
                     })
+                })
+                .catch(({message}) => {
+                    hide.then(() => message.error(message))
                 })
         }
             
@@ -131,7 +136,7 @@ class productList extends Component {
     }
     getListInfo() {
         const { pageSize, pageNo, searchText } = this.state
-        console.log(searchText)
+        const hide = message.loading('加载中..')
         this.setState({
             data: []
         })
@@ -142,21 +147,29 @@ class productList extends Component {
             .then(res => {
                 let keys = ['data', 'catalogs']
                 let obj = {}
-                res.forEach(({data: {list, resultCode, resultMessage}}, index) => {
+                res.forEach(({data: {list, resultCode, resultMessage, totalCount}}, index) => {
+                    const key = keys[index]
                     if(resultCode != "200"){
                         throw({message: resultMessage})
                     }
-                    obj[keys[index]] = list
+                    obj[key] = list
+                    if(key == 'data'){
+                        obj.totalCount = totalCount
+                    }
                 })
                 this.setState(obj)
+                hide()
             })
-            .catch(err => message.error(err))
+            .catch(({message}) => {
+                hide()
+                message.error(message)
+            })
     }
     componentDidMount() {
         this.getListInfo()
     }
     render() {
-        const { data, catalogs, pageSize, previewVisible, previewImage } = this.state
+        const { data, catalogs, pageSize, previewVisible, previewImage, totalCount } = this.state
         const columns = [{
             title: '分类',
             className: 'catalogId',
@@ -166,8 +179,8 @@ class productList extends Component {
         }, {
             title: '广告手',
             className: 'ader',
-            dataIndex: 'ader',
-            render: id => <span>111</span>,
+            dataIndex: 'aderName',
+            render: aderName => <span>{aderName || '暂无'}</span>,
             ...this.getColumnSearchProps('ader'),
         }, {
             title: '产品图片',
@@ -204,8 +217,8 @@ class productList extends Component {
             render: num => <span>{num / 100}</span>,
         }, {
             title: '各地区货币价格',
-            className: 'pricestr',
-            dataIndex: 'pricestr',
+            className: 'priceStr',
+            dataIndex: 'priceStr',
         }, {
             title: '库存',
             className: 'stock',
@@ -215,7 +228,7 @@ class productList extends Component {
             title: '状态',
             className: 'state',
             dataIndex: 'state',
-            render: state => <span>{state ? '上架' : '下架'}</span>,
+            render: state => <span>{!state ? '在售' : '已下架'}</span>,
             ...this.getColumnSearchProps('state'),
         }, {
             title: '操作',
@@ -239,8 +252,8 @@ class productList extends Component {
                     dataSource={data}
                     rowKey="id"
                     pagination={{
-                        total: data ? data.length : 0,
-                        showTotal: total => `共有${total}条数据`,
+                        total: totalCount || 0,
+                        showTotal: () => `共有${totalCount}条数据`,
                         showSizeChanger: true, 
                         onChange: this.handlePageChange,
                         pageSize
