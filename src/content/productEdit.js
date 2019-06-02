@@ -24,7 +24,7 @@ class productEdit extends Component {
         if (id) {
             this.getDate(`/business/product/info/${id}`, 'GET')
                 .then(({data}) => {
-                    const { more, spec } = data
+                    const { more, spec, departmentId } = data
                     data.inner = BraftEditor.createEditorState(more && more.details.text || null)
                     data.images = more.bannerImgs.split(',').map(item => {
                         return {
@@ -54,6 +54,7 @@ class productEdit extends Component {
                     })
                     data.attrs = attrs
                     this.setState(data)
+                    this.getUser(departmentId)
                 })
             this.getDepartments()
             this.getCatalogs()
