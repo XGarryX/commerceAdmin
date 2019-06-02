@@ -20,7 +20,7 @@ class productEdit extends Component {
     }
     state = {}
     init(id) {
-        id = id == undefined ? id : this.props.id
+        id = id || this.props.id
         if (id) {
             this.getDate(`/business/product/info/${id}`, 'GET')
                 .then(({data}) => {
