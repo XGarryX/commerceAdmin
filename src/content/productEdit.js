@@ -251,7 +251,7 @@ class productEdit extends Component {
                 message.error(message)
             })
     }
-    shouldComponentUpdate ({ id }) {
+    componentWillReceiveProps  ({ id }) {
         if(id && id != this.props.id){
             this.init()
         }
