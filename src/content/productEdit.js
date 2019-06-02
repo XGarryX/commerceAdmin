@@ -19,8 +19,8 @@ class productEdit extends Component {
         this.submit = this.submit.bind(this)
     }
     state = {}
-    init() {
-        const { id } = this.props
+    init(id) {
+        id = id == undefined ? id : this.props.id
         if (id) {
             this.getDate(`/business/product/info/${id}`, 'GET')
                 .then(({data}) => {
@@ -253,7 +253,7 @@ class productEdit extends Component {
     }
     componentWillReceiveProps  ({ id }) {
         if(id && id != this.props.id){
-            this.init()
+            this.init(id)
         }
         return true
     }
