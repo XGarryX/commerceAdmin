@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import axios from 'axios'
 import Images from '../components/Images'
 import { updateTime } from '../redux/action/app'
-import { apiPath, imagePath } from '../config/api'
+import { apiPath, imagePath, buyLink } from '../config/api'
 import { addTab, toggleTab, setTabProps } from '../redux/action/tab'
 import '../style/content/productList.less'
 
@@ -242,7 +242,7 @@ class productList extends Component {
             title: '',
             dataIndex: 'id',
             className: 'preview',
-            render: id => <a href='javascript:;'><span onClick={() => window.open(`http://localhost:3001/${id}`)}>预览</span></a>,
+            render: id => <a href='javascript:;'><span onClick={() => window.open(`${buyLink}/${id}`)}>预览</span></a>,
         }]
         return (
             <div>
