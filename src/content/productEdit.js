@@ -15,6 +15,7 @@ class productEdit extends Component {
 
         this.handleChange = this.handleChange.bind(this)
         this.onAttrChange = this.onAttrChange.bind(this)
+        this.handleDepartmentChange = this.handleDepartmentChange.bind(this)
         this.submit = this.submit.bind(this)
     }
     state = {}
@@ -101,6 +102,13 @@ class productEdit extends Component {
                 aderList: list
             })
         })
+    }
+    handleDepartmentChange(id) {
+        this.setState({
+            departmentId: id,
+            ader: ''
+        })
+        this.getUser(id)
     }
     //处理分类数据
     handleCatalogs(data) {
@@ -248,16 +256,6 @@ class productEdit extends Component {
         }
         return true
     }
-    componentWillUpdate(nextProps, newProps = {}) {
-        const { departmentId } = newProps
-        const { department } = this.state
-        if(departmentId && departmentId != this.state.departmentId){
-            department && this.setState({
-                ader: ''
-            })
-            this.getUser(departmentId)
-        }
-    }
     componentDidMount() {
         this.init()
     }
@@ -268,6 +266,7 @@ class productEdit extends Component {
                     {...this.state}
                     handleChange={this.handleChange}
                     onAttrChange={this.onAttrChange}
+                    handleDepartmentChange={this.handleDepartmentChange}
                 />
                 <div className="form-actions" style={{padding: '10px', textAlign: 'right'}}>
                     <Button type="primary" onClick={this.submit} >修改</Button>

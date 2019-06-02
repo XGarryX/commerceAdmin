@@ -63,7 +63,7 @@ class ProduceEditer extends Component {
     }
     render() {
         const { isFetching, department, departmentId, aderList = [], ader, type, catalogId, name, internalName, purchasePrice, price, priceStr, supplier, buyLink, inner, images = [], attrs =[] } = this.props
-        const { handleChange, onAttrChange } = this.props
+        const { handleChange, onAttrChange, handleDepartmentChange } = this.props
         return (
             <div className="add-product">
                 <form>
@@ -77,7 +77,7 @@ class ProduceEditer extends Component {
                                         className="select"
                                         placeholder="选择部们"
                                         value={departmentId}
-                                        onChange={e => handleChange('departmentId', e)}
+                                        onChange={e => handleDepartmentChange(e)}
                                     >
                                         {department && department.map(item => (
                                             <Select.Option value={item.id} key={item.id}>{item.roleName}</Select.Option>
