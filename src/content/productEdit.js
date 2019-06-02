@@ -24,7 +24,7 @@ class productEdit extends Component {
             this.getDate(`/business/product/info/${id}`, 'GET')
                 .then(({data}) => {
                     const { more, spec } = data
-                    data.inner = BraftEditor.createEditorState(more.details.text)
+                    data.inner = BraftEditor.createEditorState(more && more.details.text || null)
                     data.images = more.bannerImgs.split(',').map(item => {
                         return {
                             url: item,
