@@ -88,8 +88,10 @@ class Admin extends Component {
           <Layout>
             <Tab className="tab-list"></Tab>
             <Content className="content">{
-              this.props.tabList.map(({ tabKey, path, props = {} }) => {
-                return <PageLoadable key={tabKey} keyValue={tabKey} path={path} prop={props} /> 
+              this.props.tabList.filter(({ hiding }) => {
+                return !hiding
+              }).map(({ tabKey, path, props = {} }) => {
+                return <PageLoadable key={tabKey} keyValue={tabKey} path={path} prop={props} />
               })
             }</Content>
           </Layout>

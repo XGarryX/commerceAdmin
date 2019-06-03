@@ -6,13 +6,15 @@ import Images from '../components/Images'
 import { updateTime } from '../redux/action/app'
 import { apiPath, imagePath, buyLink } from '../config/api'
 import { addTab, toggleTab, setTabProps } from '../redux/action/tab'
+import setState from '../public/setState'
 import '../style/content/productList.less'
 
 class productList extends Component {
     constructor(props) {
         super(props)
-
         this.handlePageChange = this.handlePageChange.bind(this)
+
+        setState.call(this)
     }
     state = {
         previewVisible: false,

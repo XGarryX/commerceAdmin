@@ -1,4 +1,4 @@
-import { ADDTAB, TOGGLETAB, REMOVETAB, SETTABPROPS } from '../action/tab'
+import { ADDTAB, TOGGLETAB, REMOVETAB, SETTABPROPS, CHANGESTATE } from '../action/tab'
 
 export default (store = {}, action) => {
     switch(action.type){
@@ -21,9 +21,19 @@ export default (store = {}, action) => {
             })
         case SETTABPROPS:
             var tabList = store.tabList || [],
-            index = tabList.findIndex(item => item.tabKey === action.tabKey)
+                index = tabList.findIndex(item => item.tabKey === action.tabKey)
             store.tabList[index].props = action.props
             return store
+        case CHANGESTATE:
+            var tabList = store.tabList || [],
+                index = tabList.findIndex(item => item.tabKey === store.tabKey)
+            return Object.assign({}, store, {
+                tabList: [
+                    ...tabList.slice(0, index),
+                    Object.assign(tabList[index], { hiding: action.state }),
+                    ...tabList.slice(index + 1)
+                ]
+            })
         default:
             return store
     }

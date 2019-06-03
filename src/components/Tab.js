@@ -1,11 +1,16 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Tabs } from 'antd'
-import { toggleTab, removeTab } from '../redux/action/tab'
+import { Tabs, Icon } from 'antd'
+import { toggleTab, removeTab, changeState } from '../redux/action/tab'
 import '../style/components/Tab.less'
 
 const TabPane = Tabs.TabPane
 class Tab extends Component {
+    constructor(props) {
+        super(props)
+
+        this.refresh = this.refresh.bind(this)
+    }
     handleChange(key) {
         this.props.toggleTab(key)
     }
@@ -17,28 +22,39 @@ class Tab extends Component {
                 tabList[0].tabKey
         toggleTab(defaultKey)
     }
+    refresh() {
+        const { changeState } = this.props
+        changeState(true)
+        setTimeout(() => changeState(false), 0)
+    }
     render() {
         const { tabList, tabKey } = this.props
         return (
-            tabList.length > 0 ? <Tabs
-                hideAdd
-                tabBarStyle={{margin: 0}}
-                activeKey={tabKey}
-                onChange={key => this.handleChange(key)}
-                onEdit={key => this.handleEdit(key)}
-                type="editable-card"
-                className="tag-list"
-            >
-            {
-                tabList.map(tab => {
-                    return <TabPane
-                        tab={tab.name}
-                        key={tab.tabKey}
-                    >
-                    </TabPane>
-                })
-            }
-            </Tabs> : ''
+            tabList.length ? <div className="tab">
+                <div className="refresh" onClick={this.refresh}>
+                    <span>刷新</span>
+                    <Icon type="redo" className="refresj-icon"/>
+                </div>
+                <Tabs
+                    hideAdd
+                    tabBarStyle={{margin: 0}}
+                    activeKey={tabKey}
+                    onChange={key => this.handleChange(key)}
+                    onEdit={key => this.handleEdit(key)}
+                    type="editable-card"
+                    className="tag-list"
+                >
+                {
+                    tabList.map(tab => {
+                        return <TabPane
+                            tab={tab.name}
+                            key={tab.tabKey}
+                        >
+                        </TabPane>
+                    })
+                }
+                </Tabs>
+            </div> : ''
         )
     }
 }
@@ -54,6 +70,7 @@ const mapStoreToProps = store => {
 const mapDispathToProps = dispatch => ({
     toggleTab: tabKey => dispatch(toggleTab(tabKey)),
     removeTab: tabKey => dispatch(removeTab(tabKey)),
+    changeState: state => dispatch(changeState(state)),
 })
 
 export default connect(

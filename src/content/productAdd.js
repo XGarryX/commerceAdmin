@@ -7,6 +7,7 @@ import BraftEditor from 'braft-editor'
 import ProduceEditer from '../components/ProduceEditer'
 import { updateTime } from '../redux/action/app'
 import { apiPath } from '../config/api'
+import setState from '../public/setState'
 import '../style/content/productAdd.less'
 import 'braft-editor/dist/index.css'
 
@@ -18,6 +19,8 @@ class productAdd extends Component {
         this.onAttrChange = this.onAttrChange.bind(this)
         this.handleDepartmentChange = this.handleDepartmentChange.bind(this)
         this.submit = this.submit.bind(this)
+
+        setState.call(this)
     }
     state = {}
     init() {

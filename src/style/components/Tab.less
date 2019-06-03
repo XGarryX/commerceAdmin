@@ -1,6 +1,17 @@
-.tag-list{
-    @height: 40px;
-    margin: 0;
-    padding: 0;
-    min-height: @height;
+.tab{
+    @width: 56px;
+    line-height: 40px;
+    .refresh{
+        float: right;
+        width: @width;
+        color: #00a5ff;
+        cursor: pointer;
+    }
+    .tag-list{
+        @height: 40px;
+        margin: 0;
+        padding: 0;
+        min-height: @height;
+        margin-right: @width;
+    }
 }
