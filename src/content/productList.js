@@ -19,6 +19,7 @@ class productList extends Component {
     state = {
         previewVisible: false,
         previewImage: '',
+        isFetching: true,
         searchText: {},
         pageSize: 10,
         pageNo: 1,
@@ -94,22 +95,10 @@ class productList extends Component {
     }
     handlePageChange(pageNo, pageSize) {
         if(pageSize){
-            const hide = message.loading('加载中..')
-            this.operating()
             this.setState({
                 pageNo,
                 pageSize,
-            })
-            this.getData('/business/product/list', {pageSize, pageNo})
-                .then(({data: {list}}) => {
-                    hide()
-                    this.setState({
-                        data: list
-                    })
-                })
-                .catch(({message}) => {
-                    hide.then(() => message.error(message))
-                })
+            }, () => this.getListInfo())
         }
             
     }
@@ -138,9 +127,8 @@ class productList extends Component {
     }
     getListInfo() {
         const { pageSize, pageNo, searchText } = this.state
-        const hide = message.loading('加载中..')
         this.setState({
-            data: []
+            isFetching: true,
         })
         if(searchText.purchasePrice) {
             searchText.purchasePrice = searchText.purchasePrice * 100
@@ -151,7 +139,9 @@ class productList extends Component {
         ])
             .then(res => {
                 let keys = ['data', 'catalogs']
-                let obj = {}
+                let obj = {
+                    isFetching: false
+                }
                 res.forEach(({data: {list, resultCode, resultMessage, totalCount}}, index) => {
                     const key = keys[index]
                     if(resultCode != "200"){
@@ -163,10 +153,8 @@ class productList extends Component {
                     }
                 })
                 this.setState(obj)
-                hide()
             })
             .catch(({message}) => {
-                hide()
                 message.error(message)
             })
     }
@@ -174,7 +162,7 @@ class productList extends Component {
         this.getListInfo()
     }
     render() {
-        const { data, catalogs, pageSize, previewVisible, previewImage, totalCount } = this.state
+        const { data, catalogs, pageSize, previewVisible, previewImage, totalCount, isFetching } = this.state
         const columns = [{
             title: '分类',
             className: 'catalogId',
@@ -250,7 +238,7 @@ class productList extends Component {
             <div>
                 <Table
                     size="middle"
-                    loading={!data}
+                    loading={isFetching}
                     bordered={true}
                     className="productList"
                     columns={columns}

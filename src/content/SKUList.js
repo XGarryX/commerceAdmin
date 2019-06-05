@@ -1,7 +1,10 @@
 import React, { Component } from 'react'
-import { Table, Input, Select, Button, Modal } from 'antd'
+import { connect } from 'react-redux'
+import { Table, Input, Select, Button, Modal, message } from 'antd'
+import axios from 'axios'
+import { updateTime } from '../redux/action/app'
+import { apiPath } from '../config/api'
 import '../style/content/SKUList.less'
-import SKUList from '../static/SKUList.json'
 
 class SKU extends Component {
     constructor(props) {
@@ -10,16 +13,26 @@ class SKU extends Component {
         this.handlePageChange = this.handlePageChange.bind(this)
         this.handlePreview = this.handlePreview.bind(this)
         this.handleCancel = this.handleCancel.bind(this)
+        this.handleSeachOptionChange = this.handleSeachOptionChange.bind(this)
+        this.handleSearch = this.handleSearch.bind(this)
+        this.reSearch = this.reSearch.bind(this)
     }
     state = {
-        SKUList: [],
+        skuList: null,
         size: 'default',
+        departmentList: null,
         isFetching: true,
         previewVisible: false,
-        previewImage: ''
+        previewImage: '',
+        searchText: {},
+        pageSize: 10,
+        pageNo: 1,
     }
-    handlePageChange(page, pageSize) {
-        console.log(page, pageSize)
+    handlePageChange(pageNo, pageSize) {
+        this.setState({
+            pageNo,
+            pageSize
+        }, () => this.getSkuList())
     }
     handleResize = ((win) => {
         let _lastHeight, _lastOrderHeight
@@ -47,49 +60,121 @@ class SKU extends Component {
         });
     }
     handleCancel() {this.setState({ previewVisible: false })}
-    componentDidMount() {
-        setTimeout(() => {
+    handleSeachOptionChange(key, value) {
+        const { searchText } = this.state
+        this.setState({
+            searchText: Object.assign(searchText, {
+                [key]: value
+            })
+        })
+    }
+    handleSearch() {
+        this.setState({
+            pageNo: 1,
+        }, () => this.getSkuList())
+    }
+    reSearch() {
+        this.setState({
+            searchText: {},
+            pageNo: 1
+        }, () => this.getSkuList())
+    }
+    getData(url, params){
+        const { checkTimeOut, updateTime, token } = this.props
+        checkTimeOut()
+        updateTime(new Date().getTime())
+        return axios({
+            url: apiPath + url,
+            method: 'GET',
+            params,
+            headers: {
+                accessToken: token
+            }
+        })
+        .then(({data, data: {resultCode, resultMessage}}) => {
+            if(resultCode != "200"){
+                throw({message: resultMessage})
+            }
+            return (data || {})
+        })
+        .catch(({message}) => {
+            message.error(message)
+        })
+    }
+    getSkuList() {
+        const { searchText, pageNo, pageSize } = this.state
+        const params = Object.assign(searchText, {
+            pageSize,
+            pageNo,
+        })
+        this.setState({
+            isFetching: true
+        })
+        this.getData('/business/product/control/skus', params)
+        .then((data = {}) => {
+            const {list, totalCount} = data
             this.setState({
-                SKUList,
+                skuList: list,
+                totalCount,
                 isFetching: false
             })
-        }, 1000)
+        })
+    }
+    getDepartments() {
+        this.getData('/common/departments')
+        .then(({list}) => {
+            this.setState({
+                departmentList: list,
+            })
+        })
+    }
+    componentDidMount() {
+        this.getSkuList()
+        this.getDepartments()
         window.addEventListener('resize', this.handleResize)
     }
-    componentDidUpdate() {this.handleResize()}
+    componentDidUpdate() {
+        this.handleResize()
+    }
     componentWillUnmount() {window.removeEventListener('resize', this.handleResize)}
     render() {
-        const { size, previewVisible, isFetching, scrollY, SKUList, previewImage } = this.state
+        const { size, previewVisible, scrollY, isFetching, skuList, previewImage, departmentList, totalCount, searchText: { department, internalName, id }, pageNo, pageSize } = this.state
         const columns = [{
             title: '产品图片',
             className: 'image',
-            dataIndex: 'image',
+            dataIndex: 'imgUrl',
             render: url => url && <img src={url} onClick={() => this.handlePreview(url)}/>
         }, {
             title: '内部名称',
             className: 'iname',
-            dataIndex: 'iname',
+            dataIndex: 'internalName',
         }, {
             title: 'SKU',
             className: 'SKU',
-            dataIndex: 'SKU',
+            dataIndex: 'id',
         }, {
             title: '属性',
             className: 'attributes',
-            dataIndex: 'attributes',
+            dataIndex: 'skuValue',
         }]
         const options = [{
             key: 'department',
             title: '部门',
-            render: props => <Select {...props}/>
+            render: props => {
+                return (<Select {...props} loading={!departmentList} onChange={e => this.handleSeachOptionChange(props.key, e)} value={department} >
+                {departmentList && departmentList.map(item => (
+                    <Select.Option value={item.id} key={item.id}>{item.roleName}</Select.Option>
+                ))}
+                </Select>)
+            }
         }, {
-            key: 'iname',
+            key: 'internalName',
             title: '内部名称',
-            render: props => <Input {...props}/>
+            render: props => <Input {...props} onChange={e => this.handleSeachOptionChange(props.key, e.target.value)} value={internalName} />
         }, {
-            key: 'SKU',
+            key: 'id',
             title: 'SKU',
-            render: props => <Input {...props}/>
+            render: props => <Input {...props} onChange={e => this.handleSeachOptionChange(props.key, e.target.value)} value={id} />
         }]
         return (
             <div className="SKU-block" id="SKU-block">
@@ -98,9 +183,8 @@ class SKU extends Component {
                     options.map(item => {
                         const { key, render, title, className } = item
                         const props = {
-                            onChange: e => this.handleSeachOptionChange(key, e.target.value),
+                            key,
                             className: `opitons ${className || ''}`,
-                            size: 'small'
                         }
                         return (
                             <label key={key}>
@@ -110,7 +194,8 @@ class SKU extends Component {
                     })
                 }
                     <p className="search-operating">
-                        <Button type="primary" size={size}>搜索</Button>
+                        <Button type="primary" size={size} onClick={this.handleSearch} >搜索</Button>
+                        <Button type="primary" size={size} onClick={this.reSearch} >重置</Button>
                         <Button type="primary" icon="download" size={size}>导出EXCEL</Button>
                     </p>
                 </div>
@@ -119,20 +204,22 @@ class SKU extends Component {
                         size="middle"
                         loading={isFetching}
                         className="productList"
-                        rowKey="SKU"
+                        rowKey="id"
                         bordered
                         columns={columns}
                         scroll={
                             {x: 1000, y: scrollY}
                         }
-                        dataSource={SKUList}
+                        dataSource={skuList}
                         onExpandedRowsChange={() => console.log(1)}
                         pagination={{
-                            total: SKUList ? SKUList.length : 0,
-                            pageSize: 10,
-                            showTotal: total => `共有${total}条数据`,
+                            total: totalCount || 0,
+                            pageSize,
+                            showTotal: totalCount => `共有${totalCount || 0}条数据`,
                             showSizeChanger: true, 
-                            onChange: this.handlePageChange
+                            onChange: this.handlePageChange,
+                            onShowSizeChange: this.handlePageChange,
+                            current: pageNo,
                         }}
                     />
                 </div>
@@ -144,4 +231,19 @@ class SKU extends Component {
     }
 }
 
-export default SKU
+const mapStoreToProps = store => {
+    const { token, lastTime: { checkTimeOut } } = store
+    return {
+        token,
+        checkTimeOut
+    }
+}
+  
+const mapDispathToProps = dispatch => ({
+    updateTime: time => dispatch(updateTime(time)),
+})
+
+export default connect(
+    mapStoreToProps,
+    mapDispathToProps
+)(SKU)

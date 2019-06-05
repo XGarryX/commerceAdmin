@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Table, Input, InputNumber, Upload, Button, Icon, Select } from 'antd'
+import { Table, Input, Upload, Button, Icon } from 'antd'
+import { apiPath, imagePath } from '../config/api'
 import '../style/components/ProduceAttrs.less'
 
 class ProduceAttrs extends Component {
@@ -13,17 +14,17 @@ class ProduceAttrs extends Component {
     upDateState(state) {
         this.props.onAttrChange(state)
     }
-    uploadChange({ file }, attrObj, date) {
+    uploadChange({ file: { status, response: { fileName, prefix } } }, attrObj, date) {
         const { attrs } = this.props
         const index = attrs.indexOf(attrObj)
         const targetAttr = attrs[index]
         const attrValuesIndex = targetAttr.attrValues.findIndex(item => item.date == date)
-        if (file.status === "done") {
+        if (status === "done") {
             targetAttr.attrValues[attrValuesIndex] = Object.assign(targetAttr.attrValues[attrValuesIndex], {
-                imageUid: file.uid
+                imgUrl: (imagePath + prefix + fileName).replace(/\./g, '\\.')
             })
             this.upDateState(attrs)
-        } else if (file.status === "removed") {
+        } else if (status === "removed") {
             targetAttr.attrValues[attrValuesIndex] = Object.assign(targetAttr.attrValues[attrValuesIndex], {
                 imageUid: null
             })
@@ -119,9 +120,9 @@ class ProduceAttrs extends Component {
             dataIndex: 'imageUid',
             render: (value, {date}) => (
                 <Upload
-                    action={`${this.props.api}/file/qiniu/upload`}
+                    action={`${apiPath}/file/qiniu/upload`}
                     disabled={value ? true : false}
-                    headers={{Authorization: this.props.token}}
+                    headers={{accessToken: this.props.token}}
                     onChange={e => this.uploadChange(e, attr, date)}
                 >
                     <Button>
@@ -195,10 +196,9 @@ class ProduceAttrs extends Component {
 }
 
 const mapStoreToProps = store => {
-    const { token, api } = store
+    const { token } = store
     return {
         token,
-        api
     }
 }
 
