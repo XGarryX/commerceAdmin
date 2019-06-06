@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { Table, Input, Select, Button, Modal, message } from 'antd'
+import { Table, Input, Select, Button, Modal } from 'antd'
 import axios from 'axios'
-import { updateTime } from '../redux/action/app'
 import { apiPath } from '../config/api'
 import '../style/content/SKUList.less'
 
@@ -231,19 +229,4 @@ class SKU extends Component {
     }
 }
 
-const mapStoreToProps = store => {
-    const { token, lastTime: { checkTimeOut } } = store
-    return {
-        token,
-        checkTimeOut
-    }
-}
-  
-const mapDispathToProps = dispatch => ({
-    updateTime: time => dispatch(updateTime(time)),
-})
-
-export default connect(
-    mapStoreToProps,
-    mapDispathToProps
-)(SKU)
+export default SKU

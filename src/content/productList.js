@@ -3,7 +3,6 @@ import { Table, Input, Button, Icon, Modal, message } from 'antd'
 import { connect } from 'react-redux'
 import axios from 'axios'
 import Images from '../components/Images'
-import { updateTime } from '../redux/action/app'
 import { apiPath, imagePath, buyLink } from '../config/api'
 import { addTab, toggleTab, setTabProps } from '../redux/action/tab'
 import setState from '../public/setState'
@@ -261,16 +260,13 @@ class productList extends Component {
 }
 
 const mapStoreToProps = store => {
-    const { token, lastTime: { checkTimeOut }, tab: { tabList } } = store
+    const { tab: { tabList } } = store
     return {
-        token,
-        checkTimeOut,
         tabList
     }
 }
   
 const mapDispathToProps = dispatch => ({
-    updateTime: time => dispatch(updateTime(time)),
     addTab: tabKey => dispatch(addTab(tabKey)),
     toggleTab: tabKey => dispatch(toggleTab(tabKey)),
     setTabProps: (tabKey, props) => dispatch(setTabProps(tabKey, props)),

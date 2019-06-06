@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, Component } from 'react'
 import { connect } from 'react-redux'
 import { Spin, Alert } from 'antd'
+import { updateTime } from '../redux/action/app'
 
 class LazyPage extends Component {
     constructor(props) {
@@ -16,7 +17,7 @@ class LazyPage extends Component {
     }
     render() {
         const Page = this.state.page,
-            {tabKey, keyValue, prop} = this.props
+            {tabKey, keyValue, prop, token, checkTimeOut, updateTime} = this.props
         return (
             <Suspense
                 fallback={
@@ -30,7 +31,7 @@ class LazyPage extends Component {
                 }
             >
                 <div style={{display: (tabKey === keyValue ? 'block' : 'none')}}>
-                    <Page {...prop}/>
+                    <Page {...prop} token={token} checkTimeOut={checkTimeOut} updateTime={updateTime} />
                 </div>
             </Suspense>
         )
@@ -43,12 +44,19 @@ class LazyPage extends Component {
 }
 
 const mapStoreToProps = store => {
-    const {tab: {tabKey}} = store
+    const {tab: {tabKey}, token, lastTime: { checkTimeOut }} = store
     return {
-        tabKey
+        tabKey,
+        token,
+        checkTimeOut,
     }
 }
 
+const mapDispathToProps = dispatch => ({
+    updateTime: time => dispatch(updateTime(time)),
+})
+
 export default connect(
-    mapStoreToProps
+    mapStoreToProps,
+    mapDispathToProps
 )(LazyPage)

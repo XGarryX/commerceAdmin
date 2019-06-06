@@ -1,11 +1,9 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
 import axios from 'axios'
 import { Button, message } from 'antd'
 import xss from 'xss'
 import BraftEditor from 'braft-editor'
 import ProduceEditer from '../components/ProduceEditer'
-import { updateTime } from '../redux/action/app'
 import { apiPath } from '../config/api'
 import setState from '../public/setState'
 import '../style/content/productAdd.less'
@@ -262,19 +260,4 @@ class productAdd extends Component {
     }
 }
 
-const mapStoreToProps = store => {
-    const { token, lastTime: { checkTimeOut } } = store
-    return {
-        token,
-        checkTimeOut
-    }
-}
-  
-const mapDispathToProps = dispatch => ({
-    updateTime: time => dispatch(updateTime(time)),
-})
-
-export default connect(
-    mapStoreToProps,
-    mapDispathToProps
-)(productAdd)
+export default productAdd

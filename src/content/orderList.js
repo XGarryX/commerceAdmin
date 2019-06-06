@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Table, Input, Select, DatePicker, Button } from 'antd'
 import axios from 'axios'
-import orderList from '../static/orderList.json'
+import { apiPath } from '../config/api'
 import '../style/content/orderList.less'
 
 const { RangePicker } = DatePicker
@@ -9,17 +9,78 @@ const { RangePicker } = DatePicker
 class productList extends Component {
     constructor(props) {
         super(props)
+
         this.handleResize = this.handleResize.bind(this)
         this.handlePageChange = this.handlePageChange.bind(this)
+        this.handleSearch = this.handleSearch.bind(this)
+        this.reSearch = this.reSearch.bind(this)
     }
     state = {
         orderList: [],
         isFetching: true,
         scrollY: 0,
-        size: 'default'
+        size: 'default',
+        searchText: {},
+        pageNo: 1,
+        pageSize: 10
     }
-    handlePageChange(page, pageSize) {
-        console.log(page, pageSize)
+    handleSearch() {
+        this.setState({
+            pageNo: 1,
+        }, () => this.getOrderList())
+    }
+    reSearch() {
+        this.setState({
+            searchText: {},
+            pageNo: 1
+        }, () => this.getOrderList())
+    }
+    getData(url, params){
+        const { checkTimeOut, updateTime, token } = this.props
+        checkTimeOut()
+        updateTime(new Date().getTime())
+        return axios({
+            url: apiPath + url,
+            method: 'GET',
+            params,
+            headers: {
+                accessToken: token
+            }
+        })
+        .then(({data, data: {resultCode, resultMessage}}) => {
+            if(resultCode != "200"){
+                throw({message: resultMessage})
+            }
+            return (data || {})
+        })
+        .catch(({message}) => {
+            message.error(message)
+        })
+    }
+    getOrderList() {
+        const { searchText, pageNo, pageSize } = this.state
+        const params = Object.assign(searchText, {
+            pageSize,
+            pageNo,
+        })
+        this.setState({
+            isFetching: true
+        })
+        this.getData('/business/order/control/console/list', params)
+        .then((data = {}) => {
+            const {list, totalCount} = data
+            this.setState({
+                orderList: list,
+                totalCount,
+                isFetching: false
+            })
+        })
+    }
+    handlePageChange(pageNo, pageSize) {
+        this.setState({
+            pageNo,
+            pageSize
+        }, () => this.getOrderList())
     }
     handleResize = ((win) => {
         let _lastHeight, _lastOrderHeight
@@ -41,19 +102,15 @@ class productList extends Component {
         }
     })(window)
     handleSeachOptionChange(key, value) {
-        this.setState({
+        const { searchText } = this.state
+        this.setState(Object.assign(searchText, {
             [key]: value
-        }, () => {
+        }), () => {
             console.log(this.state)
         })
     }
     componentDidMount() {
-        setTimeout(() => {
-            this.setState({
-                orderList,
-                isFetching: false
-            })
-        }, 1000)
+        this.getOrderList()
         window.addEventListener('resize', this.handleResize)
     }
     componentDidUpdate() {
@@ -63,11 +120,11 @@ class productList extends Component {
         window.removeEventListener('resize', this.handleResize)
     }
     render() {
-        const { isFetching, orderList } = this.state
+        const { isFetching, orderList, totalCount, size } = this.state
         const columns = [{
             title: '订单号',
             className: 'orderId',
-            dataIndex: 'orderId',
+            dataIndex: 'id',
         }, {
             title: '域名',
             className: 'domain',
@@ -123,11 +180,15 @@ class productList extends Component {
         }, {
             title: '留言',
             className: 'message',
-            dataIndex: 'message',
+            dataIndex: 'mark',
         }, {
             title: '下单时间',
             className: 'orderTime',
-            dataIndex: 'orderTime',
+            dataIndex: 'createTime',
+            render: time => {
+                let date = new Date(time)
+                return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}\n${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+            }
         }, {
             title: '发货时间',
             className: 'postTime',
@@ -224,8 +285,9 @@ class productList extends Component {
                     })
                 }
                     <p className="search-operating">
-                        <Button type="primary" size={this.state.size}>搜索</Button>
-                        <Button type="primary" icon="download" size={this.state.size}>导出EXCEL</Button>
+                        <Button type="primary" size={size} onClick={this.handleSearch} >搜索</Button>
+                        <Button type="primary" size={size} onClick={this.reSearch} >重置</Button>
+                        <Button type="primary" icon="download" size={size}>导出EXCEL</Button>
                     </p>
                 </div>
                 <div className="order-list">
@@ -241,11 +303,12 @@ class productList extends Component {
                         }
                         dataSource={orderList}
                         pagination={{
-                            total: orderList ? orderList.length : 0,
+                            total: totalCount || 0,
                             pageSize: 10,
-                            showTotal: total => `共有${total}条数据`,
+                            showTotal: totalCount => `共有${totalCount}条数据`,
                             showSizeChanger: true, 
-                            onChange: this.handlePageChange
+                            onChange: this.handlePageChange,
+                            onShowSizeChange: this.handlePageChange,
                         }}
                     />
                 </div>
