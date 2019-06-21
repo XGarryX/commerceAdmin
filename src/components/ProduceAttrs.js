@@ -185,7 +185,7 @@ class ProduceAttrs extends Component {
         return (
             <div className="produceAttrs">
                 {
-                    attrs.map(item => {
+                    attrs && attrs.map(item => {
                         return this.renderAttr(item)
                     })
                 }

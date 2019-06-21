@@ -1,7 +1,12 @@
 import React, { Component } from 'react'
-import { Table, Input, Select, DatePicker, Button } from 'antd'
+import { Table, Input, Select, DatePicker, Button, message } from 'antd'
+import { connect } from 'react-redux'
 import axios from 'axios'
 import { apiPath } from '../config/api'
+import { addTab, toggleTab, setTabProps } from '../redux/action/tab'
+import { langList, langTable } from '../config/lang'
+import { statusObj, statusList } from '../config/orderStatus'
+import exportExecl, { format } from '../public/exportExecl'
 import '../style/content/orderList.less'
 
 const { RangePicker } = DatePicker
@@ -14,6 +19,8 @@ class productList extends Component {
         this.handlePageChange = this.handlePageChange.bind(this)
         this.handleSearch = this.handleSearch.bind(this)
         this.reSearch = this.reSearch.bind(this)
+        this.handleTimeChange = this.handleTimeChange.bind(this)
+        this.handleExport = this.handleExport.bind(this)
     }
     state = {
         orderList: [],
@@ -51,22 +58,24 @@ class productList extends Component {
             if(resultCode != "200"){
                 throw({message: resultMessage})
             }
-            return (data || {})
+            return data || {}
         })
-        .catch(({message}) => {
-            message.error(message)
+        .catch(err => {
+            message.error(err.message)
+            return {}
         })
     }
     getOrderList() {
         const { searchText, pageNo, pageSize } = this.state
-        const params = Object.assign(searchText, {
+        const params = Object.assign({}, searchText, {
+            monent: undefined,
             pageSize,
             pageNo,
         })
         this.setState({
             isFetching: true
         })
-        this.getData('/business/order/control/console/list', params)
+        this.getData('/business/order/console/list', params)
         .then((data = {}) => {
             const {list, totalCount} = data
             this.setState({
@@ -75,6 +84,79 @@ class productList extends Component {
                 isFetching: false
             })
         })
+    }
+    timeToDate(time) {
+        let date = new Date(time)
+        const toDouble = num => num > 9 ? num : '0' + num
+        return `${date.getFullYear()}-${toDouble(date.getMonth() + 1)}-${toDouble(date.getDate())} ${toDouble(date.getHours())}:${toDouble(date.getMinutes())}:${toDouble(date.getSeconds())}`
+    }
+    setStatus(orderId) {
+        const tabKey = "order-edit"
+        const { addTab, toggleTab, setTabProps, tabList } = this.props
+        const index = tabList.find(item => item.tabKey == tabKey)
+        if (index) {
+            setTabProps(tabKey, {orderId})
+        } else {
+            addTab({
+                tabKey,
+                name: '修改订单',
+                path: 'SetStatus',
+                props: {orderId}
+            })
+        }
+        toggleTab(tabKey)
+    }
+    handleExport() {
+        const nameMap = {
+            '订单号': {
+                key: 'id'
+            },
+            '地区': {
+                key: 'lang',
+                handle: lang => langTable[lang]
+            },
+            '订单状态': {
+                key: 'status',
+                handle: status => statusObj[status]
+            },
+            '姓名': {
+                key: 'name'
+            },
+            '电话': {
+                key: 'phone'
+            },
+            '邮箱': {
+                key: 'email'
+            },
+            '总价': {
+                key: 'allPrice',
+                handle: allPrice => allPrice / 100
+            },
+            '产品名': {
+                key: 'products',
+                handle: products => {
+                    let { name, allSpecMatchValue } = products[0].product
+                    return name + ' ' + allSpecMatchValue
+                }
+            },
+            '内部名称': {
+                key: 'products',
+                handle: products => products[0].product.internalName
+            },
+            '送货地址': {
+                key: 'addressVo',
+                handle: ({addressInfo}) => addressInfo
+            },
+            '留言': {
+                key: 'mark'
+            },
+            '下单时间': {
+                key: 'createTime',
+                handle: time => this.timeToDate(time)
+            }
+        }
+        const { orderList = [] } = this.state
+        exportExecl(format(orderList, nameMap), '订单列表')
     }
     handlePageChange(pageNo, pageSize) {
         this.setState({
@@ -102,15 +184,34 @@ class productList extends Component {
         }
     })(window)
     handleSeachOptionChange(key, value) {
+        value = typeof value == 'object' ? value.target.value : value
         const { searchText } = this.state
-        this.setState(Object.assign(searchText, {
-            [key]: value
-        }), () => {
-            console.log(this.state)
+        this.setState({
+            searchText: Object.assign({}, searchText, {
+                [key]: value
+            })
+        })
+    }
+    handleTimeChange(monent) {
+        let startTime = this.timeToDate(monent[0]._d.getTime())
+        let endTime = this.timeToDate(monent[1]._d.getTime())
+        const { searchText } = this.state
+        this.setState({
+            searchText: Object.assign({}, searchText, {
+                monent,
+                startTime,
+                endTime
+            })
         })
     }
     componentDidMount() {
         this.getOrderList()
+        this.getData('/common/departments')
+        .then(({list}) => {
+            this.setState({
+                department: list
+            })
+        })
         window.addEventListener('resize', this.handleResize)
     }
     componentDidUpdate() {
@@ -120,7 +221,8 @@ class productList extends Component {
         window.removeEventListener('resize', this.handleResize)
     }
     render() {
-        const { isFetching, orderList, totalCount, size } = this.state
+        const { isFetching, orderList, totalCount, size, department = [], pageNo, pageSize, searchText } = this.state
+        const renderOption = (data, key = 'key', name = 'name') => data.map(item => <Select.Option key={item[key]} value={item[key]}>{item[name]}</Select.Option>)
         const columns = [{
             title: '订单号',
             className: 'orderId',
@@ -132,11 +234,12 @@ class productList extends Component {
         }, {
             title: '地区',
             className: 'area',
-            dataIndex: 'area',
-        }, {
-            title: '仓库',
-            className: 'stock',
-            dataIndex: 'stock',
+            dataIndex: 'lang',
+            render: lang => langTable[lang]
+        // }, {
+        //     title: '仓库',
+        //     className: 'stock',
+        //     dataIndex: 'stock',
         }, {
             title: '物流',
             className: 'logistics',
@@ -144,11 +247,12 @@ class productList extends Component {
         }, {
             title: '订单状态',
             className: 'state',
-            dataIndex: 'state',
+            dataIndex: 'status',
+            render: status => statusObj[status]
         }, {
             title: '姓名',
             className: 'userName',
-            dataIndex: 'userName',
+            dataIndex: 'name',
         }, {
             title: '电话',
             className: 'phone',
@@ -156,19 +260,32 @@ class productList extends Component {
         }, {
             title: '邮箱',
             className: 'Email',
-            dataIndex: 'Email',
+            dataIndex: 'email',
         }, {
             title: '总价',
             className: 'total',
-            dataIndex: 'total',
+            dataIndex: 'allPrice',
+            render: allPrice => allPrice / 100
         }, {
             title: '产品名',
             className: 'productName',
-            dataIndex: 'productName',
+            dataIndex: 'products',
+            render: products => {
+                let { name, allSpecMatchValue } = products[0].product
+                return (
+                    <p>
+                        <span>{name}</span>
+                        <br />
+                        <span>{allSpecMatchValue} x{products[0].count}</span>
+                    </p>
+                )
+            }
         }, {
             title: '内部名称',
             className: 'iNmae',
-            dataIndex: 'iName',
+            dataIndex: 'products',
+            key: 'iNmae',
+            render: products => products[0].product.internalName
         }, {
             title: '邮编',
             className: 'postalCode',
@@ -176,7 +293,8 @@ class productList extends Component {
         }, {
             title: '送货地址',
             className: 'address',
-            dataIndex: 'address',
+            dataIndex: 'addressVo',
+            render: ({addressInfo}) => addressInfo
         }, {
             title: '留言',
             className: 'message',
@@ -185,10 +303,7 @@ class productList extends Component {
             title: '下单时间',
             className: 'orderTime',
             dataIndex: 'createTime',
-            render: time => {
-                let date = new Date(time)
-                return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}\n${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
-            }
+            render: time => this.timeToDate(time),
         }, {
             title: '发货时间',
             className: 'postTime',
@@ -213,10 +328,10 @@ class productList extends Component {
             title: '手续费',
             className: 'handlingFee',
             dataIndex: 'handlingFee',
-        }, {
-            title: '汇率',
-            className: 'exchangeRate',
-            dataIndex: 'exchangeRate',
+        // }, {
+        //     title: '汇率',
+        //     className: 'exchangeRate',
+        //     dataIndex: 'exchangeRate',
         }, {
             title: '重复数',
             className: 'repeatNumber',
@@ -228,18 +343,25 @@ class productList extends Component {
         }, {
             title: '操作',
             className: 'operating',
-            dataIndex: 'operating',
-            render: () => <a href="javascript:;">详情</a>,
+            dataIndex: 'id',
+            key: 'operating',
+            render: id => <a href="javascript:;" onClick={() => this.setStatus(id)}>详情</a>,
         }]
         const options = [{
-            key: 'department',
+            key: 'departmentId',
             title: '部门',
-            render: props => <Select {...props}/>
-        }, {
-            key: 'domain',
-            title: '域名',
-            className: "long",
-            render: props => <Select {...props}/>
+            render: props => {
+                return(
+                    <Select {...props}>
+                    {renderOption(department, 'id', 'roleName')}
+                    </Select>
+                )
+            }
+        // }, {
+        //     key: 'domain',
+        //     title: '域名',
+        //     className: "long",
+        //     render: props => <Select {...props}/>
         }, {
             key: 'postState',
             title: '物流状态',
@@ -249,22 +371,33 @@ class productList extends Component {
             title: '物流',
             render: props => <Select {...props}/>
         }, {
-            key: 'area',
+            key: 'lang',
             title: '地区',
-            render: props => <Select {...props}/>
+            render: props => {
+                return(
+                    <Select {...props}>
+                    {renderOption(langList)}
+                    </Select>
+                )
+            }
         }, {
             key: 'state',
             title: '订单状态',
-            render: props => <Select {...props}/>
+            render: props => <Select {...props}>{renderOption(statusList, 'status')}</Select>
         }, {
-            key: 'keyWords',
+            key: 'phone',
+            title: '电话',
+            className: "long",
+            render: props => <Input {...props}/>
+        }, {
+            key: 'keyWord',
             title: '关键词',
             className: "long",
             render: props => <Input {...props}/>
         }, {
-            key: 'startTime',
+            key: 'monent',
             title: '起始时间',
-            render: props => <RangePicker {...props} style={{width: 200}}/>
+            render: props => <RangePicker {...props} onChange={this.handleTimeChange} style={{width: 200}}/>
         }]
         return (
             <div className="order-block" id="order-block">
@@ -273,7 +406,8 @@ class productList extends Component {
                     options.map(item => {
                         const { key, render, title, className } = item
                         const props = {
-                            onChange: e => this.handleSeachOptionChange(key, e.target.value),
+                            onChange: e => this.handleSeachOptionChange(key, e),
+                            value: searchText[key],
                             className: `opitons ${className || ''}`,
                             size: 'small'
                         }
@@ -287,7 +421,7 @@ class productList extends Component {
                     <p className="search-operating">
                         <Button type="primary" size={size} onClick={this.handleSearch} >搜索</Button>
                         <Button type="primary" size={size} onClick={this.reSearch} >重置</Button>
-                        <Button type="primary" icon="download" size={size}>导出EXCEL</Button>
+                        <Button type="primary" icon="download" size={size} onClick={this.handleExport}>导出EXCEL</Button>
                     </p>
                 </div>
                 <div className="order-list">
@@ -295,7 +429,7 @@ class productList extends Component {
                         size="middle"
                         loading={isFetching}
                         className="productList"
-                        rowKey="orderId"
+                        rowKey="id"
                         bordered
                         columns={columns}
                         scroll={
@@ -304,7 +438,8 @@ class productList extends Component {
                         dataSource={orderList}
                         pagination={{
                             total: totalCount || 0,
-                            pageSize: 10,
+                            pageNo: pageNo,
+                            pageSize: pageSize,
                             showTotal: totalCount => `共有${totalCount}条数据`,
                             showSizeChanger: true, 
                             onChange: this.handlePageChange,
@@ -317,4 +452,21 @@ class productList extends Component {
     }
 }
 
-export default productList
+const mapStoreToProps = store => {
+    const { tab: { tabList } } = store
+    return {
+        tabList
+    }
+}
+  
+const mapDispathToProps = dispatch => ({
+    addTab: tabKey => dispatch(addTab(tabKey)),
+    toggleTab: tabKey => dispatch(toggleTab(tabKey)),
+    setTabProps: (tabKey, props) => dispatch(setTabProps(tabKey, props)),
+})
+
+export default connect(
+    mapStoreToProps,
+    mapDispathToProps
+)(productList)
+

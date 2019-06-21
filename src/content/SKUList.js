@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Table, Input, Select, Button, Modal } from 'antd'
 import axios from 'axios'
 import { apiPath } from '../config/api'
+import exportExecl, { format } from '../public/exportExecl'
 import '../style/content/SKUList.less'
 
 class SKU extends Component {
@@ -14,6 +15,7 @@ class SKU extends Component {
         this.handleSeachOptionChange = this.handleSeachOptionChange.bind(this)
         this.handleSearch = this.handleSearch.bind(this)
         this.reSearch = this.reSearch.bind(this)
+        this.handleExport = this.handleExport.bind(this)
     }
     state = {
         skuList: null,
@@ -65,6 +67,15 @@ class SKU extends Component {
                 [key]: value
             })
         })
+    }
+    handleExport() {
+        const nameMap = {
+            '内部名称': {key: 'internalName'},
+            'SKU': {key: 'id'},
+            '属性': {key: 'skuValue'},
+        }
+        const { skuList = [] } = this.state
+        exportExecl(format(skuList, nameMap), 'SKU')
     }
     handleSearch() {
         this.setState({
@@ -194,7 +205,7 @@ class SKU extends Component {
                     <p className="search-operating">
                         <Button type="primary" size={size} onClick={this.handleSearch} >搜索</Button>
                         <Button type="primary" size={size} onClick={this.reSearch} >重置</Button>
-                        <Button type="primary" icon="download" size={size}>导出EXCEL</Button>
+                        <Button type="primary" icon="download" size={size} onClick={this.handleExport} >导出EXCEL</Button>
                     </p>
                 </div>
                 <div className="SKU-list">

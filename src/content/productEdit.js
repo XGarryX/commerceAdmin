@@ -15,7 +15,6 @@ class productEdit extends Component {
 
         this.handleChange = this.handleChange.bind(this)
         this.onAttrChange = this.onAttrChange.bind(this)
-        this.handleDepartmentChange = this.handleDepartmentChange.bind(this)
         this.submit = this.submit.bind(this)
     }
     state = {}
@@ -58,6 +57,7 @@ class productEdit extends Component {
                 })
             this.getDepartments()
             this.getCatalogs()
+            this.getUser()
         }
     }
     //获取数据
@@ -96,20 +96,13 @@ class productEdit extends Component {
         })
     }
     //获取广告手
-    getUser(id) {
-        this.getDate(`/common/department/console/user?departmentId=${id}`, 'GET')
+    getUser() {
+        this.getDate(`/common/aders`, 'GET')
         .then(({data: {list}}) => {
             this.setState({
                 aderList: list
             })
         })
-    }
-    handleDepartmentChange(id) {
-        this.setState({
-            departmentId: id,
-            ader: ''
-        })
-        this.getUser(id)
     }
     //处理分类数据
     handleCatalogs(data) {
@@ -153,6 +146,8 @@ class productEdit extends Component {
             name: 'departmentId', msg: '请选择部门'
         }, {
             name: 'ader', msg: '请选择广告手'
+        }, {
+            name: 'lang', msg: '请选择地区'
         }, {
             name: 'catalogId', msg: '请选择商品分类'
         }, {
@@ -267,7 +262,6 @@ class productEdit extends Component {
                     {...this.state}
                     handleChange={this.handleChange}
                     onAttrChange={this.onAttrChange}
-                    handleDepartmentChange={this.handleDepartmentChange}
                 />
                 <div className="form-actions" style={{padding: '10px', textAlign: 'right'}}>
                     <Button type="primary" onClick={this.submit} >修改</Button>

@@ -5,6 +5,7 @@ import axios from 'axios'
 import BraftEditor from 'braft-editor'
 import { updateTime } from '../redux/action/app'
 import { apiPath, imagePath } from '../config/api'
+import { langList } from '../config/lang'
 import PicturesWall from '../components/PicturesWall'
 import ProduceAttrs from '../components/ProduceAttrs'
 import '../style/components/ProduceEditer.less'
@@ -62,8 +63,8 @@ class ProduceEditer extends Component {
         handleChange('images', images)
     }
     render() {
-        const { isFetching, department, departmentId, aderList = [], ader, type, catalogId, name, internalName, purchasePrice, price, priceStr, supplier, buyLink, inner, images = [], attrs =[] } = this.props
-        const { handleChange, onAttrChange, handleDepartmentChange } = this.props
+        const { isFetching, department, departmentId, aderList = [], ader, lang, type, catalogId, name, internalName, purchasePrice, price, priceStr, supplier, buyLink, inner, images = [], attrs =[] } = this.props
+        const { handleChange, onAttrChange } = this.props
         return (
             <div className="add-product">
                 <form>
@@ -77,7 +78,7 @@ class ProduceEditer extends Component {
                                         className="select"
                                         placeholder="选择部们"
                                         value={departmentId}
-                                        onChange={e => handleDepartmentChange(e)}
+                                        onChange={e => handleChange('departmentId', e)}
                                     >
                                         {department && department.map(item => (
                                             <Select.Option value={item.id} key={item.id}>{item.roleName}</Select.Option>
@@ -99,6 +100,25 @@ class ProduceEditer extends Component {
                                     {
                                         aderList.map(({id, userName}) => (
                                             <Select.Option value={id} key={id} >{userName}</Select.Option>
+                                        ))
+                                    }
+                                    </Select>
+                                </td>
+                            </tr>
+                            <tr className="lang">
+                                <th>地区</th>
+                                <td>
+                                    <Select
+                                        loading={isFetching}
+                                        className="select"
+                                        placeholder="选择语言"
+                                        defaultValue={lang}
+                                        value={lang}
+                                        onChange={e => handleChange('lang', e)}
+                                    >
+                                    {
+                                        langList.map(({key, name}) => (
+                                            <Select.Option value={key} key={key} >{name}</Select.Option>
                                         ))
                                     }
                                     </Select>

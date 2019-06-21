@@ -1,0 +1,50 @@
+.setStatus{
+    background: #FFF;
+    padding: 10px;
+    @paddingLeft: 100px;
+    .product-info{
+        line-height: 40px;
+        .item-info{
+            border-bottom: 1px solid #d5d5d5;
+            p{
+                margin: 0;
+            }
+            .info-block{
+                vertical-align: top;
+                display: inline-block;
+                width: 50%;
+                .title{
+                    float: left;
+                    width: @paddingLeft;
+                    padding-right: 10px;
+                    text-align: right;
+                    box-sizing: border-box;
+                }
+                .content{
+                    margin-left: @paddingLeft;
+                }
+                .select{
+                    width: 150px;
+                }
+                input{
+                    width: 200px;
+                }
+                textarea{
+                    width: 250px;
+                    height: 70px;
+                    margin: 5px 0;
+                    resize: none;
+                }
+                &.countAndPrice{
+                    input {
+                        width: 100px;
+                    }
+                }
+            }
+        }
+    }
+    .botton-bar{
+        padding-left: @paddingLeft;
+        margin-top: 8px;
+    }
+}

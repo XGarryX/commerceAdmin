@@ -15,7 +15,6 @@ class productAdd extends Component {
 
         this.handleChange = this.handleChange.bind(this)
         this.onAttrChange = this.onAttrChange.bind(this)
-        this.handleDepartmentChange = this.handleDepartmentChange.bind(this)
         this.submit = this.submit.bind(this)
 
         setState.call(this)
@@ -25,6 +24,7 @@ class productAdd extends Component {
         this.setState({
             ader: '',
             attrs: [],
+            lang: null,
             buyLink: '',
             catalogId: '',
             department: '',
@@ -43,6 +43,7 @@ class productAdd extends Component {
         })
         this.getDepartments()
         this.getCatalogs()
+        this.getUser()
     }
     //获取数据
     getDate(path, method) {
@@ -97,20 +98,13 @@ class productAdd extends Component {
         })
     }
     //获取广告手
-    getUser(id) {
-        this.getDate(`/common/department/console/user?departmentId=${id}`, 'GET')
+    getUser() {
+        this.getDate(`/common/aders`, 'GET')
         .then(({data: {list}}) => {
             this.setState({
                 aderList: list
             })
         })
-    }
-    handleDepartmentChange(id) {
-        this.setState({
-            departmentId: id,
-            ader: ''
-        })
-        this.getUser(id)
     }
     //aaaaaaa以后一定优化这里
     setCatalogs2Step(data, pid = "0") {
@@ -137,6 +131,8 @@ class productAdd extends Component {
             name: 'departmentId', msg: '请选择部门'
         }, {
             name: 'ader', msg: '请选择广告手'
+        }, {
+            name: 'lang', msg: '请选择地区'
         }, {
             name: 'catalogId', msg: '请选择商品分类'
         }, {
@@ -242,6 +238,7 @@ class productAdd extends Component {
     componentDidMount() {
         this.getDepartments()
         this.getCatalogs()
+        this.getUser()
     }
     render() {
         return (
@@ -250,7 +247,6 @@ class productAdd extends Component {
                     {...this.state}
                     handleChange={this.handleChange}
                     onAttrChange={this.onAttrChange}
-                    handleDepartmentChange={this.handleDepartmentChange}
                 />
                 <div className="form-actions" style={{padding: '10px', textAlign: 'right'}}>
                     <Button type="primary" onClick={this.submit} >提交</Button>
