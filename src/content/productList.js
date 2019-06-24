@@ -231,7 +231,7 @@ class productList extends Component {
             title: '',
             dataIndex: 'id',
             className: 'preview',
-            render: id => <a href='javascript:;'><span onClick={() => window.open(`${buyLink}/${id}`)}>预览</span></a>,
+            render: id => <a href='javascript:;'><span onClick={() => window.open(`${buyLink}/shop/${id}`)}>预览</span></a>,
         }]
         return (
             <div>

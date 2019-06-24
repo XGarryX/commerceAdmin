@@ -6,6 +6,7 @@ import { apiPath } from '../config/api'
 import { addTab, toggleTab, setTabProps } from '../redux/action/tab'
 import { langList, langTable } from '../config/lang'
 import { statusObj, statusList } from '../config/orderStatus'
+import { expressList, expressTable, expressStatusList, expressStatusTable } from '../config/express'
 import exportExecl, { format } from '../public/exportExecl'
 import '../style/content/orderList.less'
 
@@ -116,7 +117,7 @@ class productList extends Component {
                 handle: lang => langTable[lang]
             },
             '订单状态': {
-                key: 'status',
+                key: 'payStatus',
                 handle: status => statusObj[status]
             },
             '姓名': {
@@ -143,6 +144,10 @@ class productList extends Component {
                 key: 'products',
                 handle: products => products[0].product.internalName
             },
+            '邮编': {
+                key: 'more',
+                handle: (more = {}) => more.zipCode
+            },
             '送货地址': {
                 key: 'addressVo',
                 handle: ({addressInfo}) => addressInfo
@@ -153,6 +158,18 @@ class productList extends Component {
             '下单时间': {
                 key: 'createTime',
                 handle: time => this.timeToDate(time)
+            },
+            '快递单号': {
+                key: 'more',
+                handle: (more = {}) => more.expressNumber
+            },
+            '物流状态': {
+                key: 'expressStatus',
+                handle: status => expressStatusTable[status]
+            },
+            '备注': {
+                key: 'more',
+                handle: (more = {}) => more.remarks
             }
         }
         const { orderList = [] } = this.state
@@ -243,11 +260,13 @@ class productList extends Component {
         }, {
             title: '物流',
             className: 'logistics',
-            dataIndex: 'logistics',
+            dataIndex: 'more',
+            key: 'express',
+            render: (more = {}) => expressTable[more.express]
         }, {
             title: '订单状态',
             className: 'state',
-            dataIndex: 'status',
+            dataIndex: 'payStatus',
             render: status => statusObj[status]
         }, {
             title: '姓名',
@@ -270,13 +289,13 @@ class productList extends Component {
             title: '产品名',
             className: 'productName',
             dataIndex: 'products',
-            render: products => {
-                let { name, allSpecMatchValue } = products[0].product
+            render: (products = [{}]) => {
+                const { product = {}, count } = products[0]
                 return (
                     <p>
-                        <span>{name}</span>
+                        <span>{product.name}</span>
                         <br />
-                        <span>{allSpecMatchValue} x{products[0].count}</span>
+                        <span>{product.allSpecMatchValue} x{count}</span>
                     </p>
                 )
             }
@@ -285,16 +304,21 @@ class productList extends Component {
             className: 'iNmae',
             dataIndex: 'products',
             key: 'iNmae',
-            render: products => products[0].product.internalName
+            render: (products = [{product:{}}]) => products[0].product.internalName
         }, {
             title: '邮编',
             className: 'postalCode',
-            dataIndex: 'postalCode',
+            dataIndex: 'more',
+            key: 'zipCode',
+            render: (more = {}) => more.zipCode
         }, {
             title: '送货地址',
             className: 'address',
             dataIndex: 'addressVo',
-            render: ({addressInfo}) => addressInfo
+            render: (addressVo = {}) => {
+                const { addressInfo } = addressVo
+                return addressInfo
+            }
         }, {
             title: '留言',
             className: 'message',
@@ -310,12 +334,15 @@ class productList extends Component {
             dataIndex: 'postTime',
         }, {
             title: '快递单号',
-            className: 'postNumber',
-            dataIndex: 'postNumber',
+            className: 'expressNumber',
+            dataIndex: 'more',
+            key: 'expressNumber',
+            render: (more = {}) => more.expressNumber
         }, {
             title: '物流状态',
             className: 'postState',
-            dataIndex: 'postState',
+            dataIndex: 'expressStatus',
+            render: status => expressStatusTable[status]
         }, {
             title: '已结款金额',
             className: 'payment',
@@ -339,7 +366,9 @@ class productList extends Component {
         }, {
             title: '备注',
             className: 'remarks',
-            dataIndex: 'remarks',
+            dataIndex: 'more',
+            key: 'more',
+            render: (more = {}) => more.remarks
         }, {
             title: '操作',
             className: 'operating',
@@ -363,13 +392,13 @@ class productList extends Component {
         //     className: "long",
         //     render: props => <Select {...props}/>
         }, {
-            key: 'postState',
+            key: 'expressStatus',
             title: '物流状态',
-            render: props => <Select {...props}/>
+            render: props => <Select {...props}>{renderOption(expressStatusList, 'status')}</Select>
         }, {
-            key: 'logistics',
+            key: 'express',
             title: '物流',
-            render: props => <Select {...props}/>
+            render: props => <Select {...props}>{renderOption(expressList, 'id')}</Select>
         }, {
             key: 'lang',
             title: '地区',
@@ -381,7 +410,7 @@ class productList extends Component {
                 )
             }
         }, {
-            key: 'state',
+            key: 'payStatus',
             title: '订单状态',
             render: props => <Select {...props}>{renderOption(statusList, 'status')}</Select>
         }, {
