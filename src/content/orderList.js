@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Table, Input, Select, DatePicker, Button, message } from 'antd'
 import { connect } from 'react-redux'
 import axios from 'axios'
-import base64url from 'base64url'
+import jwtDecode from 'jwt-decode'
 import { apiPath } from '../config/api'
 import { addTab, toggleTab, setTabProps } from '../redux/action/tab'
 import { langList, langTable } from '../config/lang'
@@ -99,19 +99,25 @@ class productList extends Component {
         const toDouble = num => num > 9 ? num : '0' + num
         return `${date.getFullYear()}-${toDouble(date.getMonth() + 1)}-${toDouble(date.getDate())} ${toDouble(date.getHours())}:${toDouble(date.getMinutes())}:${toDouble(date.getSeconds())}`
     }
-    setStatus(orderId) {
-        const tabKey = "order-edit"
+    jumpOrder(orderId, hasPower) {
+        const tabKey = hasPower ? 'order-edit' : "order-info"
         const { addTab, toggleTab, setTabProps, tabList } = this.props
         const index = tabList.find(item => item.tabKey == tabKey)
         if (index) {
             setTabProps(tabKey, {orderId})
         } else {
-            addTab({
-                tabKey,
+            const tab = hasPower ? {
                 name: '修改订单',
                 path: 'SetStatus',
+            } : {
+                name: '订单详情',
+                path: 'OrderInfo',
+            }
+            const params = Object.assign(tab, {
+                tabKey,
                 props: {orderId}
             })
+            addTab(params)
         }
         toggleTab(tabKey)
     }
@@ -230,8 +236,8 @@ class productList extends Component {
         })
     }
     componentDidMount() {
-        const token = JSON.parse(base64url.decode(this.props.token || ''))
-        const { role = 3 } = JSON.parse(token.more || '')
+        const token = jwtDecode(this.props.token || '')
+        const role = JSON.parse(token.more || '').role || "1"
         this.setState({
             role
         })
@@ -251,7 +257,7 @@ class productList extends Component {
         window.removeEventListener('resize', this.handleResize)
     }
     render() {
-        const { isFetching, orderList, totalCount, size, department = [], pageNo, pageSize, searchText, markList } = this.state
+        const { isFetching, orderList, totalCount, size, department = [], pageNo, pageSize, searchText, markList, role} = this.state
         const renderOption = (data, key = 'key', name = 'name') => data.map(item => <Select.Option key={item[key]} value={item[key]}>{item[name]}</Select.Option>)
         const columns = [{
             title: '订单号',
@@ -399,7 +405,15 @@ class productList extends Component {
             className: 'operating',
             dataIndex: 'id',
             key: 'operating',
-            render: id => <a href="javascript:;" onClick={() => this.setStatus(id)}>详情</a>,
+            render: id => {
+                const hasPower = "".match.call(role, /^(1|2)$/) ? true : false
+                return (
+                    <p>
+                        <a href="javascript:;" onClick={() => this.jumpOrder(id, false)}>{'查看'}</a>< br />
+                        {hasPower && <a href="javascript:;" onClick={() => this.jumpOrder(id, true)}>{'修改'}</a>}
+                    </p>
+                )
+            },
         }]
         const options = [{
             key: 'departmentId',

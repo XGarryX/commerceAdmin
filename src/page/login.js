@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { Form, Icon, Input, Button, message } from 'antd'
 import JsEncrypt  from 'jsencrypt'
-import base64url from "base64url"
+import jwtDecode from 'jwt-decode'
 import axios from 'axios'
 import { changeToken } from '../redux/action/token'
 import { apiPath } from '../config/api'
@@ -88,7 +88,7 @@ class Login extends Component {
     componentDidMount() {
         const token = localStorage.getItem('token')
         this.changeCode()
-        if(token && JSON.parse(base64url.decode(token.split(".")[1])).exp * 1000 > new Date().getTime()) {
+        if(token && jwtDecode(token).exp * 1000 > new Date().getTime()) {
             this.props.history.push('/admin')
         }
         axios.get(`${apiPath}/common/publicKey`, {}, {

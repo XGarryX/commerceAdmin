@@ -4,7 +4,7 @@ import {
 } from 'antd'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
-import base64url from 'base64url'
+import jwtDecode from 'jwt-decode'
 import Tab from '../components/Tab'
 import PageLoadable from '../components/PageLoadable'
 import { addTab, toggleTab } from '../redux/action/tab'
@@ -39,8 +39,8 @@ class Admin extends Component {
     const { changeToken, history, setTimeFn } = this.props
     const token = localStorage.getItem('token')
     if(token) {
-      let aaa = JSON.parse(base64url.decode(token.split(".")[1]))
-      if(aaa.exp * 1000 < new Date().getTime()) {
+      let { exp = 0 } = jwtDecode(token)
+      if(exp * 1000 < new Date().getTime()) {
         history.push('/login')
       }
     } else {
