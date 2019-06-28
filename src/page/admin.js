@@ -39,7 +39,8 @@ class Admin extends Component {
     const { changeToken, history, setTimeFn } = this.props
     const token = localStorage.getItem('token')
     if(token) {
-      if(JSON.parse(base64url.decode(token.split(".")[1])).exp * 1000 < new Date().getTime()) {
+      let aaa = JSON.parse(base64url.decode(token.split(".")[1]))
+      if(aaa.exp * 1000 < new Date().getTime()) {
         history.push('/login')
       }
     } else {

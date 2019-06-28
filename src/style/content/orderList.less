@@ -25,27 +25,36 @@
         box-sizing: border-box;
         padding: 0 10px;
         word-break: break-all;
-        th, td{
-            min-width: 50px;
-            max-width: 50px;
-            &.orderId, &.domain, &.productName{
-                min-width: 120px;
-                width: 120px;
+        tr{
+            &.mark{
+                color: red;
             }
-            &.address{
-                min-width: 100px;
-                width: 100px;
-            }
-            &.orderTime, &.Email{
-                min-width: 90px;
-                width: 90px;
-            }
-            &.payment{
-                min-width: 60px;
-                width: 60px;
-            }
-            p{
-                margin: 0;
+            th, td{
+                min-width: 50px;
+                max-width: 50px;
+                &.orderId, &.domain, &.productName{
+                    min-width: 120px;
+                    width: 120px;
+                }
+                &.address{
+                    min-width: 100px;
+                    width: 100px;
+                }
+                &.orderTime, &.Email{
+                    min-width: 90px;
+                    width: 90px;
+                }
+                &.payment{
+                    min-width: 60px;
+                    width: 60px;
+                }
+                p{
+                    margin: 0;
+                }
+                &.orderId{
+                    padding: 5px !important;
+                    font-size: 12px;
+                }
             }
         }
         .ant-pagination{

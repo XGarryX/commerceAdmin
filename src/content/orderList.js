@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Table, Input, Select, DatePicker, Button, message } from 'antd'
 import { connect } from 'react-redux'
 import axios from 'axios'
+import base64url from 'base64url'
 import { apiPath } from '../config/api'
 import { addTab, toggleTab, setTabProps } from '../redux/action/tab'
 import { langList, langTable } from '../config/lang'
@@ -30,7 +31,8 @@ class productList extends Component {
         size: 'default',
         searchText: {},
         pageNo: 1,
-        pageSize: 10
+        pageSize: 10,
+        markList: []
     }
     handleSearch() {
         this.setState({
@@ -78,11 +80,17 @@ class productList extends Component {
         })
         this.getData('/business/order/console/list', params)
         .then((data = {}) => {
-            const {list, totalCount} = data
+            const MAX_REPEAT_COUNT = 3
+            const {list = [], totalCount} = data
+            const markList = list.reduce((arr, {theProductCount = 0}, index) => {
+                theProductCount >= MAX_REPEAT_COUNT && arr.push(index)
+                return arr
+            }, [])
             this.setState({
                 orderList: list,
                 totalCount,
-                isFetching: false
+                isFetching: false,
+                markList
             })
         })
     }
@@ -222,6 +230,11 @@ class productList extends Component {
         })
     }
     componentDidMount() {
+        const token = JSON.parse(base64url.decode(this.props.token || ''))
+        const { role = 3 } = JSON.parse(token.more || '')
+        this.setState({
+            role
+        })
         this.getOrderList()
         this.getData('/common/departments')
         .then(({list}) => {
@@ -238,12 +251,19 @@ class productList extends Component {
         window.removeEventListener('resize', this.handleResize)
     }
     render() {
-        const { isFetching, orderList, totalCount, size, department = [], pageNo, pageSize, searchText } = this.state
+        const { isFetching, orderList, totalCount, size, department = [], pageNo, pageSize, searchText, markList } = this.state
         const renderOption = (data, key = 'key', name = 'name') => data.map(item => <Select.Option key={item[key]} value={item[key]}>{item[name]}</Select.Option>)
         const columns = [{
             title: '订单号',
             className: 'orderId',
             dataIndex: 'id',
+            render: (id, {more = {},productAllCount = 0}) => (
+                <div>
+                    {id}<br />
+                    当天IP购买数量<br />
+                    ({more.buyIp}):{productAllCount}
+                </div>
+            )
         }, {
             title: '域名',
             className: 'domain',
@@ -326,12 +346,16 @@ class productList extends Component {
         }, {
             title: '下单时间',
             className: 'orderTime',
-            dataIndex: 'createTime',
-            render: time => this.timeToDate(time),
+            dataIndex: 'buyTimeInfo',
+            render: (buyTimeInfo = {}) => buyTimeInfo.buyTime,
         }, {
             title: '发货时间',
             className: 'postTime',
-            dataIndex: 'postTime',
+            dataIndex: 'updateLog',
+            render: (updateLog = []) => {
+                const res = updateLog.find(({expressStatus}) => expressStatus == 11) || {}
+                return res.statusUpdateTime
+            }
         }, {
             title: '快递单号',
             className: 'expressNumber',
@@ -362,7 +386,8 @@ class productList extends Component {
         }, {
             title: '重复数',
             className: 'repeatNumber',
-            dataIndex: 'repeatNumber',
+            dataIndex: 'theProductCount',
+            render: (theProductCount = 0) => theProductCount
         }, {
             title: '备注',
             className: 'remarks',
@@ -464,6 +489,7 @@ class productList extends Component {
                         scroll={
                             {x: 1000, y: this.state.scrollY}
                         }
+                        rowClassName={(_, index) => markList.includes(index) ? ' mark' : ''}
                         dataSource={orderList}
                         pagination={{
                             total: totalCount || 0,

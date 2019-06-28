@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Table, Input, Select, Button, Modal } from 'antd'
+import { Table, Input, Select, Button, Modal, message } from 'antd'
 import axios from 'axios'
 import { apiPath } from '../config/api'
 import exportExecl, { format } from '../public/exportExecl'
@@ -102,12 +102,12 @@ class SKU extends Component {
         })
         .then(({data, data: {resultCode, resultMessage}}) => {
             if(resultCode != "200"){
-                throw({message: resultMessage})
+                throw({resultMessage})
             }
             return (data || {})
         })
-        .catch(({message}) => {
-            message.error(message)
+        .catch(({resultMessage}) => {
+            message.error(resultMessage)
         })
     }
     getSkuList() {
