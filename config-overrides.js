@@ -1,5 +1,5 @@
-const { override, fixBabelImports, addLessLoader, addWebpackPlugin } = require('customize-cra');
-const CompressionPlugin = require('compression-webpack-plugin')
+const { override, fixBabelImports, addLessLoader } = require('customize-cra')
+process.env.GENERATE_SOURCEMAP = "false"
 
 module.exports = override(
     fixBabelImports('import', {
@@ -10,7 +10,4 @@ module.exports = override(
     addLessLoader({
         javascriptEnabled: true
     }),
-    addWebpackPlugin(new CompressionPlugin({
-        deleteOriginalAssets: true,
-    })),
 );
