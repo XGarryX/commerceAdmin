@@ -231,7 +231,7 @@ class productList extends Component {
             title: '',
             dataIndex: 'id',
             className: 'preview',
-            render: id => <a href='javascript:;'><span onClick={() => window.open(`${buyLink}/shop/${id}`)}>预览</span></a>,
+            render: id => <a href='javascript:;'><span onClick={() => window.open(`${buyLink}/${id}`)}>预览</span></a>,
         }]
         return (
             <div>
@@ -248,7 +248,8 @@ class productList extends Component {
                         showTotal: () => `共有${totalCount}条数据`,
                         showSizeChanger: true, 
                         onChange: this.handlePageChange,
-                        pageSize
+                        pageSize,
+                        pageSizeOptions: [50, 100, 200]
                     }}
                 />
                 <Modal visible={previewVisible} footer={null} onCancel={() => this.setState({ previewVisible: false })}>
